@@ -217,9 +217,9 @@ def monitor_progress(total_tasks: int, job_ids: list[int]):
     with p1 as pbar_started, p2 as pbar_finished:
         while current_finished < total_tasks:
             # check queue for running and pending tasks belonging to the jobs
-            req = "squeue --noheader --array --states=[\"PD\" \"R\"]"
+            req = "squeue --noheader --array --states=PD,R"
             req += " --format=%t"
-            req += " --jobs=[" + " ".join([str(i) for i in job_ids]) + "]"
+            req += " --jobs=" + ",".join([str(i) for i in job_ids]) + ""
             response = call_program(req) # TODO: what if it does not work?
             # count running and pending tasks
             pending = response.stdout.count("PD")
@@ -271,6 +271,7 @@ def slurm(jobs: Jobs):
         logging.info("all jobs scheduled.")
 
         # continuously check status
+        time.sleep(1)
         total_tasks = count * options.args().slurm_array_size
         monitor_progress(total_tasks, job_ids)
     except:
