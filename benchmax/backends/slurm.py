@@ -182,7 +182,7 @@ def parse_out_file(jobs: Jobs, out_file: str, id_to_data):
 
 def parse_err_file(err_file: str, id_to_data):
     pattern_err = re.compile(
-        r"# START ([0-9]+) #([^#]*)# END \\1 #(?:([^#]*)# END DATA \\1 #)?"
+        r"# START ([0-9]+) #([^#]*)# END \1 #(?:([^#]*)# END DATA \1 #)?"
     )
 
     with open(err_file, "r") as f:
