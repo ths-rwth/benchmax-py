@@ -35,6 +35,8 @@ def benchmax_main():
             options.args().common_tool_prefix = os.path.dirname(tools[0].binary)
     else:
         options.args().common_tool_prefix = os.path.commonpath([t.binary for t in tools])
+    if options.args().common_tool_prefix != "":
+        options.args().common_tool_prefix += "/"
     
     # gather input files
     files = sum(
@@ -49,7 +51,7 @@ def benchmax_main():
         raise BenchmaxException("No input files found!")
     logging.debug("Number of input files: " + str(len(files)))
 
-    options.args().common_file_prefix = os.path.commonpath([dir for dir in options.args().input_directories])
+    options.args().common_file_prefix = os.path.commonpath([dir for dir in options.args().input_directories]) + "/"
     
     # create jobs
     jobs = Jobs(tools, files)
