@@ -174,7 +174,7 @@ def parse_out_file(jobs: Jobs, out_file: str, id_to_data):
         # runtime
         match_t = re.search("time: (.*)", m.group(4))
         if match_t is None: logging.warn("did not find time in " + m.group(4))
-        else: res.runtime = timedelta(milliseconds=match_t.group(1))
+        else: res.runtime = timedelta(milliseconds=int(match_t.group(1)))
 
         job_id = int(m.group(2))-1
         id_to_data[job_id] = used_tool, used_input, res
