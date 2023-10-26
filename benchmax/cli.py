@@ -6,14 +6,7 @@ import options
 from jobs import Jobs
 from backends.local import local
 from backends.slurm import slurm
-
-
-class BenchmaxException(Exception):
-    def __init__(self, msg):
-        self.__msg = msg
-
-    def __str__(self):
-        return "[benchmax][ERROR]: {}".format(self.__msg)
+from BenchmaxException import BenchmaxException
 
 
 def setup_logging():

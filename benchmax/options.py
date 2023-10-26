@@ -37,7 +37,8 @@ def parse_memout(mem_str: str) -> int:
 def positive_int(numeric_str: str) -> int:
     res = int(numeric_str)
     if res < 0:
-        raise argparse.ArgumentTypeError("grace time must be a non-negative integer")
+        raise argparse.ArgumentTypeError("must be a non-negative integer")
+    return res
 
 
 def parse_options(cmdlineoptions=None):

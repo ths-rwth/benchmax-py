@@ -6,11 +6,13 @@ import logging
 import math
 import multiprocessing
 import os
+from pathlib import Path
 import re
 import time
 from tqdm import tqdm
 
 from backends.backends import *
+from BenchmaxException import BenchmaxException
 from jobs import Jobs
 import options
 from tools.Tool import Tool
@@ -19,7 +21,7 @@ from tools.Tool import Tool
 
 def generate_jobs_file(filename: str, range: tuple[int, int], jobs: Jobs):
     logging.debug("writing slurm job file to " + filename)
-    with open(filename, "w") as f:
+    with open(filename, "w+") as f:
         logging.debug("taking jobs " + str(range[0]) + ".." + str(range[1]))
         f.writelines([
             tool.get_command_line(file) + "\n"
@@ -45,11 +47,11 @@ def generate_submit_file_chunked(args: ChunkArgs) -> str:
     logging.info("generating submit file " + filename)
 
     # rough estimation of required time
-    timeout = (options.args().timeout + options.args().grace_time)
+    timeout = (options.args().timeout + options.args().gracetime)
     minutes = args.slice_size*timeout/30
     estimate = int(min(minutes + 1, 60*24))
 
-    with open(filename, "w") as f:
+    with open(filename, "w+") as f:
         f.writelines([
             # shebang
             "#!/usr/bin/env zsh\n",
@@ -78,7 +80,7 @@ def generate_submit_file_chunked(args: ChunkArgs) -> str:
             # Execute this slice
             "for i in `seq ${start} ${end}`; do\n",
             "lineidx=$(( i - " + str(args.job_range[0]) + " ))\n",
-            "\tcmd=$(time sed -n \"${lineidx}p\" < "+args.filename_jobs+")\n",
+            "\tcmd=$(time sed -n \"${lineidx}p\" < "+args.filename_joblist+")\n",
             "\techo \"Executing $cmd\"\n",
             "\techo \"# START ${i} #\"\n",
             "\techo \"# START ${i} #\" >&2\n",
@@ -103,7 +105,7 @@ def run_job(args: tuple[int, Jobs, multiprocessing.Lock, list[int]]) -> int:
                 + "/jobs-" + str(options.args().start_time) + "-" + str(n+1) + ".jobs"
     job_size = options.args().slurm_array_size * options.args().slurm_slice_size
     job_range = (job_size * n, min(job_size * (n + 1), len(jobs)))
-    generate_jobs_file(jobs_filename, job_range, jobs.jobs)
+    generate_jobs_file(jobs_filename, job_range, jobs)
 
     submitfile = generate_submit_file_chunked(
         ChunkArgs(
@@ -111,7 +113,7 @@ def run_job(args: tuple[int, Jobs, multiprocessing.Lock, list[int]]) -> int:
             jobs_filename,
             options.args().slurm_tmp_dir,
             options.args().timeout,
-            options.args().grace_time,
+            options.args().gracetime,
             options.args().memout,
             options.args().slurm_array_size,
             options.args().slurm_slice_size,
@@ -119,10 +121,10 @@ def run_job(args: tuple[int, Jobs, multiprocessing.Lock, list[int]]) -> int:
         )
     )
 
-    logging.info("delaying for " + str(options.args().slurm_submission_delay))
+    logging.info("delaying for " + str(options.args().slurm_submit_delay))
 
     with submission_mutex:
-        time.sleep(options.args().slurm_submission_delay / 1000) # delay is ms
+        time.sleep(options.args().slurm_submit_delay / 1000) # delay is ms
 
     logging.info("submitting job now")
 
@@ -133,8 +135,7 @@ def run_job(args: tuple[int, Jobs, multiprocessing.Lock, list[int]]) -> int:
     res = call_program(cmd) # TODO: what if slurm does not work at all?
     job_id = re.search("Submitted batch job ([0-9]+)", res.stdout)
     if job_id is None:
-        logging.error("unable to obtain job id from slurm output!")
-        return -1
+        raise BenchmaxException("unable to obtain job id from slurm output!")
     job_ids.append(int(job_id.group(1)))
 
 
@@ -184,7 +185,7 @@ def parse_err_file(err_file: str, id_to_data):
         r"# START ([0-9]+) #([^#]*)# END \\1 #(?:([^#]*)# END DATA \\1 #)?"
     )
 
-    with open(err_file) as f:
+    with open(err_file, "r") as f:
         content_err = f.read()
     
     for m in pattern_err.finditer(content_err):
@@ -209,7 +210,7 @@ def all_jobs_finished(job_ids: list[int]) -> bool:
 
 
 def monitor_progress(total_tasks: int, job_ids: list[int]):
-    p1 = tqdm(total=total_tasks, position=0, desc="Started tasks")
+    p1 = tqdm(total=total_tasks, position=0, desc="Started  tasks")
     p2 = tqdm(total=total_tasks, position=1, desc="Finished tasks")
     current_finished = 0
     current_started  = 0
@@ -246,6 +247,8 @@ def cancel_jobs(job_ids: list[int]):
 
 
 def slurm(jobs: Jobs):
+    Path(options.args().slurm_tmp_dir).mkdir(parents=True, exist_ok=True)
+
     for f in glob.glob(options.args().slurm_tmp_dir + "/*"):
         if os.path.exists(f):
                 os.remove(f)

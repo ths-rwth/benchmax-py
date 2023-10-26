@@ -2,6 +2,7 @@ import logging
 import sys
 
 import cli
+from BenchmaxException import BenchmaxException
 
 
 def main():
@@ -12,7 +13,7 @@ def main():
         logging.error("Memory exhausted!")
     except KeyboardInterrupt:
         logging.error("User abort!")
-    except cli.BenchmaxException as e:
+    except BenchmaxException as e:
         print(e)
     return 1
 

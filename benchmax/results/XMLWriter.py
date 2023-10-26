@@ -104,7 +104,7 @@ class XMLWriter:
     filename: str
 
     def write(self, jobs: Jobs, results: Results):
-        with open(self.filename, "a") as file:
+        with open(self.filename, "a+") as file:
             file.write("<?xml version=\"1.0\"?>")
             write_results(jobs, results, file)
 
@@ -119,7 +119,7 @@ class XMLWriter:
                 filename = filename + str(count) + ".xml"
             else:
                 filename = filename + ".xml"
-            with open(filename, "a") as file:
+            with open(filename, "a+") as file:
                 file.write("<?xml version=\"1.0\"?>")
                 write_results(jobs, results, file, [t])
 

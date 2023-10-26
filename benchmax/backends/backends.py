@@ -77,7 +77,8 @@ def add_backend_options(parser: argparse.ArgumentParser):
         help="delay between job submissions (in milliseconds)",
         dest="slurm_submit_delay",
         metavar="TIME",
-        type=options.positive_int
+        type=options.positive_int,
+        default=100
     )
 
     # SSH Backend Settings
