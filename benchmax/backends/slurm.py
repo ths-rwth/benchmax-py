@@ -204,6 +204,7 @@ def all_jobs_finished(job_ids: list[int]) -> bool:
         cmd = "sacct --noheader -o state  -j " + str(i)
         output = call_program(cmd)
         for line in output.stdout.splitlines():
+            if len(line) <= 1: continue
             if not any([state in line for state in finished_states]):
                 return False
     return True
@@ -216,14 +217,18 @@ def monitor_progress(total_tasks: int, job_ids: list[int]):
     current_started  = 0
     with p1 as pbar_started, p2 as pbar_finished:
         while current_finished < total_tasks:
+            logging.debug("querying slurm about running/pending tasks")
             # check queue for running and pending tasks belonging to the jobs
             req = "squeue --noheader --array --states=PD,R"
             req += " --format=%t"
             req += " --jobs=" + ",".join([str(i) for i in job_ids]) + ""
+            logging.debug(req)
             response = call_program(req) # TODO: what if it does not work?
             # count running and pending tasks
             pending = response.stdout.count("PD")
             running = response.stdout.count("R")
+            logging.debug("pending: " + str(pending))
+            logging.debug("running: " + str(running))
             new_started  = total_tasks - pending
             new_finished = total_tasks - pending - running
             pbar_started.update(new_started - current_started)
@@ -233,12 +238,13 @@ def monitor_progress(total_tasks: int, job_ids: list[int]):
 
             # if all jobs are finished, but the counts are inaccurate, exit loop
             if all_jobs_finished(job_ids):
+                logging.debug("all jobs finished according to sacct")
                 pbar_started.update(total_tasks - current_started)
                 pbar_finished.update(total_tasks - current_finished)
                 break
 
             # give the server some rest before the next request
-            time.sleep(45) 
+            time.sleep(30) 
 
 
 def cancel_jobs(job_ids: list[int]):
@@ -271,10 +277,11 @@ def slurm(jobs: Jobs):
         logging.info("all jobs scheduled.")
 
         # continuously check status
-        time.sleep(1)
+        time.sleep(5)
         total_tasks = count * options.args().slurm_array_size
         monitor_progress(total_tasks, job_ids)
     except:
+        logging.error("some exception occurred, will cancel slurm jobs")
         cancel_jobs(job_ids)
         raise
 
