@@ -36,7 +36,7 @@ class ChunkArgs:
     tmp_dir:          str
     limit_time:       timedelta
     grace_time:       timedelta
-    limit_mem_mb:     int # TODO memory type?
+    limit_mem_kb:     int # TODO memory type?
     array_size:       int
     slice_size:       int
     job_range:        tuple[int, int]
@@ -64,7 +64,7 @@ def generate_submit_file_chunked(args: ChunkArgs) -> str:
             # required time
             "#SBATCH -t " + str(estimate) + "\n",
             # memory usage
-            "#SBATCH --mem-per-cpu " + str(args.limit_mem_mb + 1024) + "M\n",
+            "#SBATCH --mem-per-cpu " + str(math.ceil(args.limit_mem_kb/1000) + 1024) + "M\n",
             # load environment TODO: this feels hacky? -> pass as option?
             "source ~/load_environment\n",
             # change dir
@@ -85,7 +85,7 @@ def generate_submit_file_chunked(args: ChunkArgs) -> str:
             "\techo \"# START ${i} #\"\n",
             "\techo \"# START ${i} #\" >&2\n",
             "\tstart=`date +\"%s%3N\"`\n",
-            "\tulimit -c 0 && ulimit -S -v " + str(args.limit_mem_mb*1000),
+            "\tulimit -c 0 && ulimit -S -v " + str(args.limit_mem_kb),
             " && eval /usr/bin/time -v timeout --signal=TERM",
             " --preserve-status " + str(timeout) + "s  $cmd ; rc=$?" + "\n",
             "\tend=`date +\"%s%3N\"`\n",
@@ -121,7 +121,7 @@ def run_job(args: tuple[int, Jobs, multiprocessing.Lock, list[int]]) -> int:
         )
     )
 
-    logging.info("delaying for " + str(options.args().slurm_submit_delay))
+    logging.info("delaying for " + str(options.args().slurm_submit_delay) + "ms")
 
     with submission_mutex:
         time.sleep(options.args().slurm_submit_delay / 1000) # delay is ms
