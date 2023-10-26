@@ -73,8 +73,7 @@ def parse_options(cmdlineoptions=None):
         "--config",
         help="load options from config file",
         dest="config",
-        metavar="FILE",
-        nargs=1
+        metavar="FILE"
     )
 
     # Output Settings

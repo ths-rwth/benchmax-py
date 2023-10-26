@@ -31,8 +31,6 @@ def add_backend_options(parser: argparse.ArgumentParser):
         help="directory for storing temporary result files for slurm",
         dest="slurm_tmp_dir",
         metavar="DIR",
-        type=str,
-        nargs=1
     )
 
     backend_group.add_argument(
@@ -48,7 +46,6 @@ def add_backend_options(parser: argparse.ArgumentParser):
         dest="slurm_archive_logs",
         metavar="PREFIX",
         type=str,
-        nargs=1
     )
 
     backend_group.add_argument(
@@ -57,7 +54,6 @@ def add_backend_options(parser: argparse.ArgumentParser):
         dest="slurm_array_size",
         metavar="SIZE",
         type=options.positive_int,
-        nargs=1
     )
 
     backend_group.add_argument(
@@ -65,8 +61,7 @@ def add_backend_options(parser: argparse.ArgumentParser):
         help="number of benchmarks per slurm array task",
         dest="slurm_slice_size",
         metavar="SIZE",
-        type=options.positive_int,
-        nargs=1
+        type=options.positive_int
     )
 
     backend_group.add_argument(
@@ -74,8 +69,7 @@ def add_backend_options(parser: argparse.ArgumentParser):
         help="additional slurm sbatch options",
         dest="slurm_sbatch_options",
         metavar="OPTIONS",
-        type=str,
-        nargs=1
+        type=str
     )
 
     backend_group.add_argument(
@@ -83,8 +77,7 @@ def add_backend_options(parser: argparse.ArgumentParser):
         help="delay between job submissions (in milliseconds)",
         dest="slurm_submit_delay",
         metavar="TIME",
-        type=options.positive_int,
-        nargs=1
+        type=options.positive_int
     )
 
     # SSH Backend Settings
