@@ -104,6 +104,10 @@ def sanitize_result(tool : Tool, file: str, result: Result):
         result.stdout = ""
         if timediff > options.args().gracetime:
             logging.warn(f"Running {tool} on {file} exceeded grace time")
+            logging.warn(
+                "runtime: " + str(result.runtime.total_seconds()) + ", "
+                + str(options.args().timeout + options.args().gracetime)
+            )
     # TODO: do more, also for memout?
 
 
