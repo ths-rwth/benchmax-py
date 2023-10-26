@@ -38,7 +38,12 @@ def benchmax_main():
     
     # gather input files
     files = sum(
-        [[f for f in glob.glob(dir+"**", recursive=True) if os.path.isfile(f)] for dir in options.args().input_directories ], []
+        [
+            [f for f in glob.glob(os.path.normpath(dir)+"/**", recursive=True)
+             if os.path.isfile(f)]
+            for dir in options.args().input_directories
+        ],
+        []
     )
     if len(files) == 0:
         raise BenchmaxException("No input files found!")

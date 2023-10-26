@@ -253,9 +253,10 @@ def cancel_jobs(job_ids: list[int]):
 
 
 def slurm(jobs: Jobs):
-    Path(options.args().slurm_tmp_dir).mkdir(parents=True, exist_ok=True)
+    tmp_dir = str(os.path.normpath(options.args().slurm_tmp_dir))
+    Path(tmp_dir).mkdir(parents=True, exist_ok=True)
 
-    for f in glob.glob(options.args().slurm_tmp_dir + "/*"):
+    for f in glob.glob(tmp_dir + "/*"):
         if os.path.exists(f):
                 os.remove(f)
 
@@ -286,8 +287,8 @@ def slurm(jobs: Jobs):
         raise
 
     # collect jobs
-    out_files = glob.glob(options.args().slurm_tmp_dir + "/JOB.[0-9]+_[0-9]+.out")
-    err_files = glob.glob(options.args().slurm_tmp_dir + "/JOB.[0-9]+_[0-9]+.err")
+    out_files = glob.glob(tmp_dir + "/JOB.[0-9]+_[0-9]+.out")
+    err_files = glob.glob(tmp_dir + "/JOB.[0-9]+_[0-9]+.err")
     logging.info(f"collected {len(out_files)} out, {len(err_files)} err files")
     if len(out_files) != len(err_files):
         logging.warn("number of out and err files differ!")
