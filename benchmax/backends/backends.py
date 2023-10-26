@@ -102,7 +102,8 @@ def sanitize_result(tool : Tool, file: str, result: Result):
         result.answer = "timeout"
         result.stderr = ""
         result.stdout = ""
-        if timediff > options.args().gracetime:
+        if timediff > 2*options.args().gracetime:
+            # 2* because slurm already adds gracetime to the timeout...
             logging.warn(f"Running {tool} on {file} exceeded grace time")
             logging.warn(
                 "runtime: " + str(result.runtime.total_seconds()) + ", "
