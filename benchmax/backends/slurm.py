@@ -287,8 +287,8 @@ def slurm(jobs: Jobs):
         raise
 
     # collect jobs
-    out_files = glob.glob(tmp_dir + "/JOB.[0-9]+_[0-9]+.out")
-    err_files = glob.glob(tmp_dir + "/JOB.[0-9]+_[0-9]+.err")
+    out_files = glob.glob(tmp_dir + "/JOB.*.out")
+    err_files = glob.glob(tmp_dir + "/JOB.*.err")
     logging.info(f"collected {len(out_files)} out, {len(err_files)} err files")
     if len(out_files) != len(err_files):
         logging.warn("number of out and err files differ!")
