@@ -15,7 +15,6 @@ from backends.backends import *
 from BenchmaxException import BenchmaxException
 from jobs import Jobs
 import options
-from tools.Tool import Tool
 
 
 def generate_jobs_file(filename: str, range: tuple[int, int], jobs: Jobs):
