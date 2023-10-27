@@ -140,7 +140,7 @@ class XMLWriter:
 
     def write_for_each_tool(self, jobs: Jobs, results: Results):
         for t in jobs.tools:
-            filename = self.dest + "_" + sanitize_tool(t.binary)
+            filename = self.filename + "_" + sanitize_tool(t.binary)
             count = 1
             if os.path.isfile(filename + ".xml"):
                 while os.path.isfile(filename + str(count) + ".xml"):
@@ -151,6 +151,3 @@ class XMLWriter:
             with open(filename, "a+") as file:
                 file.write('<?xml version="1.0"?>')
                 write_results(jobs, results, file, [t])
-
-
-# TODO: add option for writing a single xml for each tool

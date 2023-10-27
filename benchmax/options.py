@@ -77,10 +77,17 @@ def parse_options(cmdlineoptions=None):
     output_group.add_argument(
         "-X",
         "--output-xml",
-        help="filename for xml output file",
+        help="filename for xml output file. "
+        + "Used as common prefix if split-xml is enabled",
         required=True,
         metavar="filename",
         dest="output_file",
+    )
+    output_group.add_argument(
+        "--split-xml",
+        help="split output data into one xml per tool",
+        action="store_true",
+        dest="split_xml",
     )
     output_group.add_argument(
         "-s", "--statistics", help="collect statistics if possible", action="store_true"

@@ -118,7 +118,10 @@ def sanitize_result(tool: Tool, file: str, result: Result):
 def write_results(jobs: Jobs, results: Results):
     logging.info("Writing results to " + options.args().output_file)
     xml = XMLWriter(options.args().output_file)
-    xml.write(jobs, results)
+    if options.args().split_xml:
+        xml.write_for_each_tool(jobs, results)
+    else:
+        xml.write(jobs, results)
 
 
 def call_program(cmd: str):
