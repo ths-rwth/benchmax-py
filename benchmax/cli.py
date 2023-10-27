@@ -12,7 +12,10 @@ from BenchmaxException import BenchmaxException
 def setup_logging():
     lvl = options.args().logging_level
     if lvl is None: lvl = logging.INFO
-    logging.basicConfig(format="[benchmax][%(levelname)s] %(message)s", level=lvl)
+    logging.basicConfig(
+        format="[benchmax][%(levelname)s] %(message)s",
+        level=lvl
+    )
 
 
 def benchmax_main():
@@ -29,7 +32,8 @@ def benchmax_main():
     tools = [t for t in options.args().tools if t.is_executable()]
     if len(tools) == 0:
         raise BenchmaxException("No usable tools found!")
-    logging.debug("Given tools: " + str(tools))
+    logging.info(f"{len(tools)} tools given")
+    logging.debug(str(tools))
 
     if len(tools) == 1:
             options.args().common_tool_prefix = os.path.dirname(tools[0].binary)
@@ -39,6 +43,7 @@ def benchmax_main():
         options.args().common_tool_prefix += "/"
     
     # gather input files
+    logging.info("collecting benchmark files")
     files = sum(
         [
             [f for f in glob.glob(os.path.normpath(dir)+"/**", recursive=True)
@@ -49,15 +54,16 @@ def benchmax_main():
     )
     if len(files) == 0:
         raise BenchmaxException("No input files found!")
-    logging.debug("Number of input files: " + str(len(files)))
+    logging.info(f"number of collected benchmark files: {len(files)}")
 
-    options.args().common_file_prefix = os.path.commonpath([dir for dir in options.args().input_directories]) + "/"
+    options.args().common_file_prefix = os.path.commonpath(
+        [dir for dir in options.args().input_directories]) + "/"
     
     # create jobs
     jobs = Jobs(tools, files)
     if len(jobs) == 0:
-        raise BenchmaxException("No valid input found for the given tools!")
-    logging.debug("Number of jobs: " + str(len(jobs)))
+        raise BenchmaxException("no valid input found for the given tools!")
+    logging.debug(f"number of jobs: {len(jobs)}")
 
     match options.args().backend:
         case "local":

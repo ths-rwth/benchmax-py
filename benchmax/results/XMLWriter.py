@@ -23,17 +23,21 @@ class WriteXMLNode:
         self.tag = tag
         self.attr = attr
 
+
     def __enter__(self):
         self.dest.write("\t"*self.indentation)
         self.dest.write("<" + self.tag + attr_to_str(self.attr) + ">\n")
         return self
 
+
     def __exit__(self, exctype, exc_value, traceback):
         self.dest.write(("\t"*self.indentation) + "</" + self.tag + ">\n")
+
 
     def write_child(self, tag: str, **attr):
         return WriteXMLNode(self.dest, self.indentation + 1, tag, **attr)
     
+
     def write_leaf(self, tag: str, text: str | None =None, **attr):
         self.dest.write("\t"*(self.indentation + 1))
         if text is None:
@@ -54,7 +58,6 @@ def sanitize_file(text: str) -> str:
     return sanitize(text.removeprefix(options.args().common_file_prefix))
 
 
-
 def write_run(parent: WriteXMLNode, tool: Tool, result: Result):
     with parent.write_child("run", solver_id=sanitize_tool(tool.binary)) as run:
         if len(result.additional_info) > 0:
@@ -63,15 +66,29 @@ def write_run(parent: WriteXMLNode, tool: Tool, result: Result):
                     statistics.write_leaf("stat", text=value, name=sanitize(key))
         
         with run.write_child("results") as resnode:
-            resnode.write_leaf("result", text=str(result.answer), name="answer", type="string")
-            resnode.write_leaf("result", text=str(result.exit_code), name="exitcode", type="int")
-            resnode.write_leaf("result", text=str(int(result.runtime/timedelta(milliseconds=1))), name="runtime", type="milliseconds")
-            resnode.write_leaf("result", text=str(result.peak_memory_kbytes), name="peak_memory", type="kbytes")
+            resnode.write_leaf(
+                "result", text=str(result.answer),
+                name="answer", type="string"
+            )
+            resnode.write_leaf(
+                "result", text=str(result.exit_code),
+                name="exitcode", type="int"
+            )
+            resnode.write_leaf(
+                "result",
+                text=str(int(result.runtime/timedelta(milliseconds=1))),
+                name="runtime", type="milliseconds"
+            )
+            resnode.write_leaf(
+                "result",text=str(result.peak_memory_kbytes),
+                name="peak_memory", type="kbytes"
+            )
 
 
-def write_file_results(parent: WriteXMLNode, filename: str, jobs: Jobs, results: Results, tools: list[Tool]):
+def write_file_results(parent: WriteXMLNode, filename: str,
+                       results: Results, tools: list[Tool]):
     with parent.write_child("file", name=sanitize_file(filename)) as f:
-        for tool in jobs.tools:
+        for tool in tools:
             res = results.get(tool, filename)
             if res is None: continue
             write_run(f, tool, res)
@@ -82,19 +99,30 @@ def write_results(jobs: Jobs, results: Results, file, tools: list[Tool] | None =
         tools = jobs.tools
     with WriteXMLNode(file, 0, "results") as root:
         with root.write_child("information") as info:
-            info.write_leaf("info",
-                name="timeout", type="seconds", value=str(options.args().timeout)
+            info.write_leaf(
+                "info",
+                name="timeout",
+                type="seconds",
+                value=str(options.args().timeout)
             )
         
-        with root.write_child("solvers", prefix=options.args().common_tool_prefix) as solvers:
+        with root.write_child(
+            "solvers", prefix=options.args().common_tool_prefix
+        ) as solvers:
             for tool in tools:
-                solvers.write_leaf("solver", solver_id=sanitize_tool(tool.binary), options=tool.arguments)
+                solvers.write_leaf(
+                    "solver",
+                    solver_id=sanitize_tool(tool.binary),
+                    options=tool.arguments
+                )
         
         with root.write_child("statistics") as statistics:
             for s in results.collect_statistics():
                 statistics.write_leaf("stat", name=sanitize(s))
         
-        with root.write_child("benchmarks", prefix=options.args().common_file_prefix) as benchmarks:
+        with root.write_child(
+            "benchmarks", prefix=options.args().common_file_prefix
+        ) as benchmarks:
             for filename in jobs.files:
                 write_file_results(benchmarks, filename, jobs, results, tools)
 

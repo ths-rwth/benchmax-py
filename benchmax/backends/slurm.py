@@ -43,8 +43,8 @@ class ChunkArgs:
 
 
 def generate_submit_file_chunked(args: ChunkArgs) -> str:
-    filename = args.tmp_dir + "/job-" + args.file_suffix + ".job"
-    logging.info("generating submit file " + filename)
+    filename = f"{args.tmp_dir}/job-{args.file_suffix}.job"
+    logging.info(f"generating submit file {filename}")
 
     # rough estimation of required time
     timeout = (options.args().timeout + options.args().gracetime)
@@ -64,7 +64,8 @@ def generate_submit_file_chunked(args: ChunkArgs) -> str:
             # required time
             "#SBATCH -t " + str(estimate) + "\n",
             # memory usage
-            "#SBATCH --mem-per-cpu " + str(math.ceil(args.limit_mem_kb/1000) + 1024) + "M\n",
+            "#SBATCH --mem-per-cpu ",
+            str(math.ceil(args.limit_mem_kb/1000) + 1024) + "M\n",
             # load environment TODO: this feels hacky? -> pass as option?
             "source ~/load_environment\n",
             # change dir
@@ -101,8 +102,8 @@ def generate_submit_file_chunked(args: ChunkArgs) -> str:
 
 def run_job(args: tuple[int, Jobs, multiprocessing.Lock, list[int]]) -> int:
     n, jobs, submission_mutex, job_ids = args
-    jobs_filename = options.args().slurm_tmp_dir \
-                + "/jobs-" + str(options.args().start_time) + "-" + str(n+1) + ".jobs"
+    jobs_filename = str(options.args().slurm_tmp_dir)
+    jobs_filename += f"/jobs-{options.args().start_time}-{n-1}.jobs"
     job_size = options.args().slurm_array_size * options.args().slurm_slice_size
     job_range = (job_size * n, min(job_size * (n + 1), len(jobs)))
     generate_jobs_file(jobs_filename, job_range, jobs)
@@ -161,21 +162,26 @@ def parse_out_file(jobs: Jobs, out_file: str, id_to_data):
                 tool_found = True
                 break
         if not tool_found:
-            logging.warn("could not find tool for " + cmd + " from " + out_file)
+            logging.warn(f"could not find tool for {cmd} from {out_file}")
         
         # output
         res.stdout = m.group(3)
 
         # exitcode
         match_e = re.search("exitcode: (.*)", m.group(4))
-        if match_e is None: logging.warn("did not find exitcode in " + m.group(4))
-        else: res.exit_code = int(match_e.group(1))
+        if match_e is None:
+            logging.warn(f"did not find exitcode in {m.group(4)}")
+        else:
+            res.exit_code = int(match_e.group(1))
         
         # runtime
         match_t = re.search("time: (.*)", m.group(4))
-        if match_t is None: logging.warn("did not find time in " + m.group(4))
-        else: res.runtime = timedelta(milliseconds=int(match_t.group(1)))
+        if match_t is None:
+            logging.warn(f"did not find time in {m.group(4)}")
+        else:
+            res.runtime = timedelta(milliseconds=int(match_t.group(1)))
 
+        # update data
         job_id = int(m.group(2))-1
         id_to_data[job_id] = used_tool, used_input, res
 
@@ -191,7 +197,7 @@ def parse_err_file(err_file: str, id_to_data):
     for m in pattern_err.finditer(content_err):
         data = id_to_data.get(int(m.group(1))-1, None)
         if data is None:
-            logging.warn("no corresponding result for err file " + err_file)
+            logging.warn(f"no corresponding result for err file {err_file}")
             return
         _, _, res = data
         res.stderr = m.group(2)
@@ -236,7 +242,7 @@ def monitor_progress(total_tasks: int, job_ids: list[int]):
             current_started = new_started
             current_finished = new_finished
 
-            # if all jobs are finished, but the counts are inaccurate, exit loop
+            # if all jobs are finished (despite different counts), exit loop
             if all_jobs_finished(job_ids):
                 logging.debug("all jobs finished according to sacct")
                 pbar_started.update(total_tasks - current_started)

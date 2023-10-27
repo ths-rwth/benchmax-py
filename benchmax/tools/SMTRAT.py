@@ -41,7 +41,6 @@ def parse_stats(result: Result) -> bool:
 
 
 
-
 class SMTRAT(Tool):
     def __init__(self, command: str):
         super().__init__(command, "SMTRAT")
@@ -66,4 +65,4 @@ class SMTRAT(Tool):
             case 12: result.answer = "memout"
             case  _: result.answer = get_status_from_output(result)
         if options.args().statistics and not parse_stats(result):
-            logging.warn("Parsing statistics failed for " + result.stdout)
+            logging.warn(f"Parsing statistics failed for {result.stdout}")
