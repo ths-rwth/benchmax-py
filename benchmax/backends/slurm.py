@@ -20,7 +20,7 @@ from tools.Tool import Tool
 
 
 def generate_jobs_file(filename: str, range: tuple[int, int], jobs: Jobs):
-    logging.debug("writing slurm job file to " + filename)
+    logging.info("writing slurm jobs file to " + filename)
     with open(filename, "w+") as f:
         logging.debug("taking jobs " + str(range[0]) + ".." + str(range[1]))
         f.writelines([
@@ -121,7 +121,7 @@ def run_job(args: tuple[int, Jobs, multiprocessing.Lock, list[int]]) -> int:
         )
     )
 
-    logging.info("delaying for " + str(options.args().slurm_submit_delay) + "ms")
+    logging.info(f"delaying for {options.args().slurm_submit_delay}ms")
 
     with submission_mutex:
         time.sleep(options.args().slurm_submit_delay / 1000) # delay is ms
@@ -256,13 +256,14 @@ def slurm(jobs: Jobs):
     tmp_dir = str(os.path.normpath(options.args().slurm_tmp_dir))
     Path(tmp_dir).mkdir(parents=True, exist_ok=True)
 
+    logging.info(f"clear directory for temporary results ({tmp_dir})")
     for f in glob.glob(tmp_dir + "/*"):
-        if os.path.exists(f):
-                os.remove(f)
+        os.remove(f)
 
     # submit jobs
     jobs_per_batch = options.args().slurm_array_size * options.args().slurm_slice_size
     count = math.ceil(len(jobs)/(jobs_per_batch))
+    logging.info(f"creating {count} slurm job(s)")
 
     submission_mutex = multiprocessing.Lock()
 
@@ -278,6 +279,7 @@ def slurm(jobs: Jobs):
         logging.info("all jobs scheduled.")
 
         # continuously check status
+        logging.info("will try to track progress after 5 seconds")
         time.sleep(5)
         total_tasks = count * options.args().slurm_array_size
         monitor_progress(total_tasks, job_ids)
@@ -287,6 +289,7 @@ def slurm(jobs: Jobs):
         raise
 
     # collect jobs
+    logging.info("collecting results")
     out_files = glob.glob(tmp_dir + "/JOB.*.out")
     err_files = glob.glob(tmp_dir + "/JOB.*.err")
     logging.info(f"collected {len(out_files)} out, {len(err_files)} err files")
@@ -295,6 +298,7 @@ def slurm(jobs: Jobs):
 
     id_to_data = {}
 
+    logging.info("parsing results")
     for f in out_files: parse_out_file(jobs, f, id_to_data)
     for f in err_files: parse_err_file(f, id_to_data)
 
@@ -323,6 +327,7 @@ def slurm(jobs: Jobs):
             logging.warn(output.stdout)
 
     if not options.args().slurm_keep_logs:
+        logging.info("deleting log files directory for temporary results")
         for f in out_files + err_files:
             if os.path.exists(f):
                 os.remove(f)
