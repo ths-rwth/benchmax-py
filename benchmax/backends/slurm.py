@@ -18,28 +18,29 @@ import options
 from tools.Tool import Tool
 
 
-
 def generate_jobs_file(filename: str, range: tuple[int, int], jobs: Jobs):
     logging.info("writing slurm jobs file to " + filename)
     with open(filename, "w+") as f:
         logging.debug("taking jobs " + str(range[0]) + ".." + str(range[1]))
-        f.writelines([
-            tool.get_command_line(file) + "\n"
-            for tool, file in jobs.jobs[range[0]:range[1]]
-        ])
+        f.writelines(
+            [
+                tool.get_command_line(file) + "\n"
+                for tool, file in jobs.jobs[range[0] : range[1]]
+            ]
+        )
 
 
 @dataclass
 class ChunkArgs:
-    file_suffix:      str
+    file_suffix: str
     filename_joblist: str
-    tmp_dir:          str
-    limit_time:       timedelta
-    grace_time:       timedelta
-    limit_mem_kb:     int # TODO memory type?
-    array_size:       int
-    slice_size:       int
-    job_range:        tuple[int, int]
+    tmp_dir: str
+    limit_time: timedelta
+    grace_time: timedelta
+    limit_mem_kb: int  # TODO memory type?
+    array_size: int
+    slice_size: int
+    job_range: tuple[int, int]
 
 
 def generate_submit_file_chunked(args: ChunkArgs) -> str:
@@ -47,56 +48,58 @@ def generate_submit_file_chunked(args: ChunkArgs) -> str:
     logging.info(f"generating submit file {filename}")
 
     # rough estimation of required time
-    timeout = (options.args().timeout + options.args().gracetime)
-    minutes = args.slice_size*timeout/30
-    estimate = int(min(minutes + 1, 60*24))
+    timeout = options.args().timeout + options.args().gracetime
+    minutes = args.slice_size * timeout / 30
+    estimate = int(min(minutes + 1, 60 * 24))
 
     with open(filename, "w+") as f:
-        f.writelines([
-            # shebang
-            "#!/usr/bin/env zsh\n",
-            # job name
-            "### Job name\n",
-            "#SBATCH --job-name=benchmax\n",
-            # output files
-            "#SBATCH -o " + args.tmp_dir + "/JOB.%A_%a.out\n",
-            "#SBATCH -e " + args.tmp_dir + "/JOB.%A_%a.err\n",
-            # required time
-            "#SBATCH -t " + str(estimate) + "\n",
-            # memory usage
-            "#SBATCH --mem-per-cpu ",
-            str(math.ceil(args.limit_mem_kb/1000) + 1024) + "M\n",
-            # load environment TODO: this feels hacky? -> pass as option?
-            "source ~/load_environment\n",
-            # change dir
-            "cd " + args.tmp_dir + "\n",
-            # calculate slices
-            "min=$SLURM_ARRAY_TASK_MIN\n",
-            "max=$SLURM_ARRAY_TASK_MAX\n",
-            "cur=$SLURM_ARRAY_TASK_ID\n",
-            "slicesize=" + str(args.slice_size) + "\n",
-            f"start=$(( (cur - 1) * slicesize + 1 + {args.job_range[0]} ))\n",
-            f"end=$(( start + slicesize - 1 + {args.job_range[0]} ))\n",
-            f"end=$((end<{args.job_range[1]} ? end : {args.job_range[1]}))\n",
-            # Execute this slice
-            "for i in `seq ${start} ${end}`; do\n",
-            "lineidx=$(( i - " + str(args.job_range[0]) + " ))\n",
-            "\tcmd=$(time sed -n \"${lineidx}p\" < "+args.filename_joblist+")\n",
-            "\techo \"Executing $cmd\"\n",
-            "\techo \"# START ${i} #\"\n",
-            "\techo \"# START ${i} #\" >&2\n",
-            "\tstart=`date +\"%s%3N\"`\n",
-            "\tulimit -c 0 && ulimit -S -v " + str(args.limit_mem_kb),
-            " && eval /usr/bin/time -v timeout --signal=TERM",
-            " --preserve-status " + str(timeout) + "s  $cmd ; rc=$?" + "\n",
-            "\tend=`date +\"%s%3N\"`\n",
-            "\techo \"# END ${i} #\"\n",
-            "\techo \"# END ${i} #\" 1>&2\n",
-            "\techo \"time: $(( end - start ))\"\n",
-            "\techo \"exitcode: $rc\"\n",
-            "\techo \"# END DATA ${i} #\"\n",
-            "done\n"
-        ])
+        f.writelines(
+            [
+                # shebang
+                "#!/usr/bin/env zsh\n",
+                # job name
+                "### Job name\n",
+                "#SBATCH --job-name=benchmax\n",
+                # output files
+                "#SBATCH -o " + args.tmp_dir + "/JOB.%A_%a.out\n",
+                "#SBATCH -e " + args.tmp_dir + "/JOB.%A_%a.err\n",
+                # required time
+                "#SBATCH -t " + str(estimate) + "\n",
+                # memory usage
+                "#SBATCH --mem-per-cpu ",
+                str(math.ceil(args.limit_mem_kb / 1000) + 1024) + "M\n",
+                # load environment TODO: this feels hacky? -> pass as option?
+                "source ~/load_environment\n",
+                # change dir
+                "cd " + args.tmp_dir + "\n",
+                # calculate slices
+                "min=$SLURM_ARRAY_TASK_MIN\n",
+                "max=$SLURM_ARRAY_TASK_MAX\n",
+                "cur=$SLURM_ARRAY_TASK_ID\n",
+                "slicesize=" + str(args.slice_size) + "\n",
+                f"start=$(( (cur - 1) * slicesize + 1 + {args.job_range[0]} ))\n",
+                f"end=$(( start + slicesize - 1 + {args.job_range[0]} ))\n",
+                f"end=$((end<{args.job_range[1]} ? end : {args.job_range[1]}))\n",
+                # Execute this slice
+                "for i in `seq ${start} ${end}`; do\n",
+                "lineidx=$(( i - " + str(args.job_range[0]) + " ))\n",
+                '\tcmd=$(time sed -n "${lineidx}p" < ' + args.filename_joblist + ")\n",
+                '\techo "Executing $cmd"\n',
+                '\techo "# START ${i} #"\n',
+                '\techo "# START ${i} #" >&2\n',
+                '\tstart=`date +"%s%3N"`\n',
+                "\tulimit -c 0 && ulimit -S -v " + str(args.limit_mem_kb),
+                " && eval /usr/bin/time -v timeout --signal=TERM",
+                " --preserve-status " + str(timeout) + "s  $cmd ; rc=$?" + "\n",
+                '\tend=`date +"%s%3N"`\n',
+                '\techo "# END ${i} #"\n',
+                '\techo "# END ${i} #" 1>&2\n',
+                '\techo "time: $(( end - start ))"\n',
+                '\techo "exitcode: $rc"\n',
+                '\techo "# END DATA ${i} #"\n',
+                "done\n",
+            ]
+        )
     return filename
 
 
@@ -118,14 +121,14 @@ def run_job(args: tuple[int, Jobs, multiprocessing.Lock, list[int]]) -> int:
             options.args().memout,
             options.args().slurm_array_size,
             options.args().slurm_slice_size,
-            job_range
+            job_range,
         )
     )
 
     logging.info(f"delaying for {options.args().slurm_submit_delay}ms")
 
     with submission_mutex:
-        time.sleep(options.args().slurm_submit_delay / 1000) # delay is ms
+        time.sleep(options.args().slurm_submit_delay / 1000)  # delay is ms
 
     logging.info("submitting job now")
 
@@ -133,7 +136,7 @@ def run_job(args: tuple[int, Jobs, multiprocessing.Lock, list[int]]) -> int:
     cmd += " " + options.args().slurm_sbatch_options
     cmd += " " + submitfile
 
-    res = call_program(cmd) # TODO: what if slurm does not work at all?
+    res = call_program(cmd)  # TODO: what if slurm does not work at all?
     job_id = re.search("Submitted batch job ([0-9]+)", res.stdout)
     if job_id is None:
         raise BenchmaxException("unable to obtain job id from slurm output!")
@@ -147,7 +150,7 @@ def parse_out_file(jobs: Jobs, out_file: str, id_to_data):
 
     with open(out_file, "r") as f:
         content_out = f.read()
-    
+
     for m in pattern.finditer(content_out):
         res = Result()
 
@@ -163,7 +166,7 @@ def parse_out_file(jobs: Jobs, out_file: str, id_to_data):
                 break
         if not tool_found:
             logging.warn(f"could not find tool for {cmd} from {out_file}")
-        
+
         # output
         res.stdout = m.group(3)
 
@@ -173,7 +176,7 @@ def parse_out_file(jobs: Jobs, out_file: str, id_to_data):
             logging.warn(f"did not find exitcode in {m.group(4)}")
         else:
             res.exit_code = int(match_e.group(1))
-        
+
         # runtime
         match_t = re.search("time: (.*)", m.group(4))
         if match_t is None:
@@ -182,7 +185,7 @@ def parse_out_file(jobs: Jobs, out_file: str, id_to_data):
             res.runtime = timedelta(milliseconds=int(match_t.group(1)))
 
         # update data
-        job_id = int(m.group(2))-1
+        job_id = int(m.group(2)) - 1
         id_to_data[job_id] = used_tool, used_input, res
 
 
@@ -193,9 +196,9 @@ def parse_err_file(err_file: str, id_to_data):
 
     with open(err_file, "r") as f:
         content_err = f.read()
-    
+
     for m in pattern_err.finditer(content_err):
-        data = id_to_data.get(int(m.group(1))-1, None)
+        data = id_to_data.get(int(m.group(1)) - 1, None)
         if data is None:
             logging.warn(f"no corresponding result for err file {err_file}")
             return
@@ -205,12 +208,13 @@ def parse_err_file(err_file: str, id_to_data):
 
 
 def all_jobs_finished(job_ids: list[int]) -> bool:
-    finished_states = ["COMPLETED","CANCELLED","TIMEOUT"]
+    finished_states = ["COMPLETED", "CANCELLED", "TIMEOUT"]
     for i in job_ids:
         cmd = "sacct --noheader -o state  -j " + str(i)
         output = call_program(cmd)
         for line in output.stdout.splitlines():
-            if len(line) <= 1: continue
+            if len(line) <= 1:
+                continue
             if not any([state in line for state in finished_states]):
                 return False
     return True
@@ -220,7 +224,7 @@ def monitor_progress(total_tasks: int, job_ids: list[int]):
     p1 = tqdm(total=total_tasks, position=0, desc="Started  tasks")
     p2 = tqdm(total=total_tasks, position=1, desc="Finished tasks")
     current_finished = 0
-    current_started  = 0
+    current_started = 0
     with p1 as pbar_started, p2 as pbar_finished:
         while current_finished < total_tasks:
             logging.debug("querying slurm about running/pending tasks")
@@ -229,13 +233,13 @@ def monitor_progress(total_tasks: int, job_ids: list[int]):
             req += " --format=%t"
             req += " --jobs=" + ",".join([str(i) for i in job_ids]) + ""
             logging.debug(req)
-            response = call_program(req) # TODO: what if it does not work?
+            response = call_program(req)  # TODO: what if it does not work?
             # count running and pending tasks
             pending = response.stdout.count("PD")
             running = response.stdout.count("R")
             logging.debug("pending: " + str(pending))
             logging.debug("running: " + str(running))
-            new_started  = total_tasks - pending
+            new_started = total_tasks - pending
             new_finished = total_tasks - pending - running
             pbar_started.update(new_started - current_started)
             pbar_finished.update(new_finished - current_finished)
@@ -250,7 +254,7 @@ def monitor_progress(total_tasks: int, job_ids: list[int]):
                 break
 
             # give the server some rest before the next request
-            time.sleep(30) 
+            time.sleep(30)
 
 
 def cancel_jobs(job_ids: list[int]):
@@ -268,7 +272,7 @@ def slurm(jobs: Jobs):
 
     # submit jobs
     jobs_per_batch = options.args().slurm_array_size * options.args().slurm_slice_size
-    count = math.ceil(len(jobs)/(jobs_per_batch))
+    count = math.ceil(len(jobs) / (jobs_per_batch))
     logging.info(f"creating {count} slurm job(s)")
 
     submission_mutex = multiprocessing.Lock()
@@ -277,10 +281,12 @@ def slurm(jobs: Jobs):
 
     try:
         with ThreadPoolExecutor(max_workers=min(count, 8)) as executor:
-            list(executor.map(
-                run_job,
-                [(i, jobs, submission_mutex, job_ids) for i in range(count)]
-            ))
+            list(
+                executor.map(
+                    run_job,
+                    [(i, jobs, submission_mutex, job_ids) for i in range(count)],
+                )
+            )
 
         logging.info("all jobs scheduled.")
 
@@ -305,8 +311,10 @@ def slurm(jobs: Jobs):
     id_to_data = {}
 
     logging.info("parsing results")
-    for f in out_files: parse_out_file(jobs, f, id_to_data)
-    for f in err_files: parse_err_file(f, id_to_data)
+    for f in out_files:
+        parse_out_file(jobs, f, id_to_data)
+    for f in err_files:
+        parse_err_file(f, id_to_data)
 
     results = Results()
     for tool, file, result in id_to_data.values():
@@ -322,7 +330,7 @@ def slurm(jobs: Jobs):
         dirname = options.args().slurm_tmp_dir
         archive = options.args().slurm_archive_logs
         archive += "-" + str(options.args().start_time) + ".tgz"
-		
+
         output = call_program(
             f"tar --force-local -czf {archive} -C {dirname} `ls {dirname}`"
         )

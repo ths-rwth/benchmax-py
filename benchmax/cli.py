@@ -11,11 +11,9 @@ from BenchmaxException import BenchmaxException
 
 def setup_logging():
     lvl = options.args().logging_level
-    if lvl is None: lvl = logging.INFO
-    logging.basicConfig(
-        format="[benchmax][%(levelname)s] %(message)s",
-        level=lvl
-    )
+    if lvl is None:
+        lvl = logging.INFO
+    logging.basicConfig(format="[benchmax][%(levelname)s] %(message)s", level=lvl)
 
 
 def benchmax_main():
@@ -36,29 +34,35 @@ def benchmax_main():
     logging.debug(str(tools))
 
     if len(tools) == 1:
-            options.args().common_tool_prefix = os.path.dirname(tools[0].binary)
+        options.args().common_tool_prefix = os.path.dirname(tools[0].binary)
     else:
-        options.args().common_tool_prefix = os.path.commonpath([t.binary for t in tools])
+        options.args().common_tool_prefix = os.path.commonpath(
+            [t.binary for t in tools]
+        )
     if options.args().common_tool_prefix != "":
         options.args().common_tool_prefix += "/"
-    
+
     # gather input files
     logging.info("collecting benchmark files")
     files = sum(
         [
-            [f for f in glob.glob(os.path.normpath(dir)+"/**", recursive=True)
-             if os.path.isfile(f)]
+            [
+                f
+                for f in glob.glob(os.path.normpath(dir) + "/**", recursive=True)
+                if os.path.isfile(f)
+            ]
             for dir in options.args().input_directories
         ],
-        []
+        [],
     )
     if len(files) == 0:
         raise BenchmaxException("No input files found!")
     logging.info(f"number of collected benchmark files: {len(files)}")
 
-    options.args().common_file_prefix = os.path.commonpath(
-        [dir for dir in options.args().input_directories]) + "/"
-    
+    options.args().common_file_prefix = (
+        os.path.commonpath([dir for dir in options.args().input_directories]) + "/"
+    )
+
     # create jobs
     jobs = Jobs(tools, files)
     if len(jobs) == 0:
@@ -71,5 +75,4 @@ def benchmax_main():
         case "slurm":
             slurm(jobs)
         case "ssh":
-            pass # TODO: do stuff
-    
+            pass  # TODO: do stuff

@@ -1,6 +1,7 @@
 from dataclasses import dataclass, field
 from datetime import timedelta
 
+
 @dataclass
 class Result:
     exit_code: int = -1
@@ -9,6 +10,4 @@ class Result:
     answer: str = "None"
     stdout: str = ""
     stderr: str = ""
-    additional_info: dict[str,str] = field(default_factory=dict)
-
-    
+    additional_info: dict[str, str] = field(default_factory=dict)

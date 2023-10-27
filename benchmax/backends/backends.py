@@ -15,11 +15,12 @@ def add_backend_options(parser: argparse.ArgumentParser):
     backend_group = parser.add_argument_group("Backend options")
 
     backend_group.add_argument(
-        "-b","--backend",
+        "-b",
+        "--backend",
         help="Backend to use for running the benchmarks",
         required=True,
         dest="backend",
-        choices=["local","slurm","ssh"]
+        choices=["local", "slurm", "ssh"],
     )
 
     # Local Backend Settings
@@ -37,7 +38,7 @@ def add_backend_options(parser: argparse.ArgumentParser):
         "--slurm.keep-logs",
         help="keep the outputfiles in tmp dir",
         dest="slurm_keep_logs",
-        action="store_true"
+        action="store_true",
     )
 
     backend_group.add_argument(
@@ -61,7 +62,7 @@ def add_backend_options(parser: argparse.ArgumentParser):
         help="number of benchmarks per slurm array task",
         dest="slurm_slice_size",
         metavar="SIZE",
-        type=options.positive_int
+        type=options.positive_int,
     )
 
     backend_group.add_argument(
@@ -69,7 +70,7 @@ def add_backend_options(parser: argparse.ArgumentParser):
         help="additional slurm sbatch options",
         dest="slurm_sbatch_options",
         metavar="OPTIONS",
-        type=str
+        type=str,
     )
 
     backend_group.add_argument(
@@ -78,7 +79,7 @@ def add_backend_options(parser: argparse.ArgumentParser):
         dest="slurm_submit_delay",
         metavar="TIME",
         type=options.positive_int,
-        default=100
+        default=100,
     )
 
     # SSH Backend Settings
@@ -92,7 +93,7 @@ def check_for_missing_results(jobs: Jobs, results: Results):
             logging.warn(f"Missing result for {tool} on {file}")
 
 
-def sanitize_result(tool : Tool, file: str, result: Result):
+def sanitize_result(tool: Tool, file: str, result: Result):
     if result.answer == "segfault":
         if result.peak_memory_kbytes > options.args().memout:
             result.answer = "memout"
@@ -102,11 +103,13 @@ def sanitize_result(tool : Tool, file: str, result: Result):
         result.answer = "timeout"
         result.stderr = ""
         result.stdout = ""
-        if timediff > 2*options.args().gracetime:
+        if timediff > 2 * options.args().gracetime:
             # 2* because slurm already adds gracetime to the timeout...
             logging.warn(f"Running {tool} on {file} exceeded grace time")
             logging.warn(
-                "runtime: " + str(result.runtime.total_seconds()) + ", "
+                "runtime: "
+                + str(result.runtime.total_seconds())
+                + ", "
                 + str(options.args().timeout + options.args().gracetime)
             )
     # TODO: do more, also for memout?
@@ -116,23 +119,19 @@ def write_results(jobs: Jobs, results: Results):
     logging.info("Writing results to " + options.args().output_file)
     xml = XMLWriter(options.args().output_file)
     xml.write(jobs, results)
-    
+
 
 def call_program(cmd: str):
     res = subprocess.run(
-            cmd,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            text=True,
-            shell=True
-        )
+        cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, shell=True
+    )
     return res
 
 
 def parse_peak_memory(output: str) -> int:
     m = re.search(r"Maximum resident set size \(kbytes\): ([0-9]+)", output)
-    if m: return int(m.group(1))
+    if m:
+        return int(m.group(1))
     else:
         logging.warn("Could not extract memory usage from output: " + output)
-        return -1 # TODO: avoid magic number
-    
+        return -1  # TODO: avoid magic number
