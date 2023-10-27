@@ -76,3 +76,5 @@ def benchmax_main():
             slurm(jobs)
         case "ssh":
             pass  # TODO: do stuff
+
+    logging.info("done.")
