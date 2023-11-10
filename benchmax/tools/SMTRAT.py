@@ -52,6 +52,9 @@ class SMTRAT(Tool):
             res += " --stats.print"
         return res
 
+    def can_handle(self, file: str) -> bool:
+        return file.endswith(".smt2")
+
     def parse_additional(self, result: Result):
         match result.exit_code:
             case 2:
@@ -74,3 +77,13 @@ class SMTRAT(Tool):
                 result.answer = get_status_from_output(result)
         if options.args().statistics and not parse_stats(result):
             logging.warn(f"Parsing statistics failed for {result.stdout}")
+
+
+class SMTRAT_QE(SMTRAT):
+    def __init__(self, command: str):
+        super().__init__(command, "SMTRAT_QE")
+
+    def parse_additional(self, result: Result):
+        m = re.match(".*Equivalent Quantifier-Free Formula:[^\n]*\n", result.stdout)
+        result.stdout = result.stdout[m.end() :]
+        super().parse_additional(result)
