@@ -16,6 +16,7 @@ def attr_to_str(attr) -> str:
     return t
 
 
+# TODO: look at the streaming utility of the lxml package, it works similarly
 class WriteXMLNode:
     def __init__(self, dest, indentation: int, tag: str, **attr):
         self.dest = dest
