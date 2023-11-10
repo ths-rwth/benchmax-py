@@ -143,12 +143,12 @@ def run_job(args: tuple[int, Jobs, multiprocessing.Lock, list[int]]) -> int:
 
 
 def parse_out_file(jobs: Jobs, out_file: str, id_to_data):
+    with open(out_file, "r") as f:
+        content_out = f.read()
+
     pattern = re.compile(
         r"Executing (.+)\n# START ([0-9]+) #([^#]*)# END \2 #(?:([^#]*)# END DATA \2 #)?"
     )
-
-    with open(out_file, "r") as f:
-        content_out = f.read()
 
     for m in pattern.finditer(content_out):
         res = Result()
@@ -189,12 +189,12 @@ def parse_out_file(jobs: Jobs, out_file: str, id_to_data):
 
 
 def parse_err_file(err_file: str, id_to_data):
+    with open(err_file, "r") as f:
+        content_err = f.read()
+
     pattern_err = re.compile(
         r"# START ([0-9]+) #([^#]*)# END \1 #(?:([^#]*)# END DATA \1 #)?"
     )
-
-    with open(err_file, "r") as f:
-        content_err = f.read()
 
     for m in pattern_err.finditer(content_err):
         data = id_to_data.get(int(m.group(1)) - 1, None)
