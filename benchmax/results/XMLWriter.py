@@ -127,7 +127,7 @@ def write_results(jobs: Jobs, results: Results, file, tools: list[Tool] | None =
             "benchmarks", prefix=options.args().common_file_prefix
         ) as benchmarks:
             for filename in jobs.files:
-                write_file_results(benchmarks, filename, jobs, results, tools)
+                write_file_results(benchmarks, filename, results, tools)
 
 
 @dataclass
