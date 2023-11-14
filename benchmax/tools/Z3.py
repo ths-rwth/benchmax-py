@@ -1,6 +1,5 @@
 import logging
 import re
-from benchmax.results.Result import Result
 
 import options
 from results.Result import Result
@@ -37,7 +36,7 @@ class Z3(Tool):
 
 class Z3_QE(Z3):
     def parse_additional(self, result: Result):
-        rex = re.compile(r"\(goals\s*\(goal\s*(.*):precision")
+        rex = re.compile(r"\(goals\s*\(goal\s*([\s\S]*):precision")
         match_out = rex.search(result.stdout)
         if match_out is None:
             logging.warn("could not parse qe output for " + str(self.binary))
