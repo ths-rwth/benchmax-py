@@ -108,6 +108,9 @@ def write_results(jobs: Jobs, results: Results, file, tools: list[Tool] | None =
                 type="seconds",
                 value=str(options.args().timeout),
             )
+            info.write_leaf(
+                "info", name="memout", type="kbytes", value=str(options.args().memout)
+            )
 
         with root.write_child(
             "solvers", prefix=options.args().common_tool_prefix
@@ -136,7 +139,7 @@ class XMLWriter:
 
     def write(self, jobs: Jobs, results: Results):
         with open(self.filename, "a+") as file:
-            file.write('<?xml version="1.0"?>')
+            file.write('<?xml version="1.0"?>\n')
             write_results(jobs, results, file)
 
     def write_for_each_tool(self, jobs: Jobs, results: Results):
