@@ -30,7 +30,6 @@ def process(tool: Tool, file: str, results: Results):
     result.stdout = out.stdout
     result.stderr = out.stderr
     result.peak_memory_kbytes = parse_peak_memory(result.stderr)
-    result.stderr = ""  # TODO ?
     tool.parse_additional(result)
     sanitize_result(tool, file, result)
     results.add_result(tool, file, result)
