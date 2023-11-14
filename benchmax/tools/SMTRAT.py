@@ -85,5 +85,8 @@ class SMTRAT_QE(SMTRAT):
 
     def parse_additional(self, result: Result):
         m = re.match(".*Equivalent Quantifier-Free Formula:[^\n]*\n", result.stdout)
-        result.stdout = result.stdout[m.end() :]
+        if m is not None:
+            result.stdout = result.stdout[m.end() :]
         super().parse_additional(result)
+        if m is not None:
+            result.answer = "success"

@@ -1,4 +1,3 @@
-import logging
 import re
 
 import options
@@ -36,11 +35,16 @@ class Z3(Tool):
 
 class Z3_QE(Z3):
     def parse_additional(self, result: Result):
-        rex = re.compile(r"\(goals\s*\(goal\s*([\s\S]*):precision")
-        match_out = rex.search(result.stdout)
-        if match_out is None:
-            logging.warn("could not parse qe output for " + str(self.binary))
-        else:
+        # check whether the output still contains quantifiers
+        match_incomplete_goal = re.search(
+            r"\(goals\s*\(goal\s*\((?:exists|forall)", result.stdout
+        )
+        if match_incomplete_goal:
+            result.answer = "invalid"
+            return
+
+        match_out = re.search(r"\(goals\s*\(goal\s*([\s\S]*):precision", result.stdout)
+        if match_out:
             out_formula = match_out.group(1)
             n_constraints = 0
             n_constraints += out_formula.count("(= ")
@@ -63,3 +67,7 @@ class Z3_QE(Z3):
 
             if "(or " in out_formula:
                 result.additional_info["contains_disjunction"] = "1"
+
+        super().parse_additional(result)
+        if match_out:
+            result.answer = "success"
