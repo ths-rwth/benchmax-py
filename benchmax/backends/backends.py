@@ -94,7 +94,7 @@ def check_for_missing_results(jobs: Jobs, results: Results):
 
 
 def sanitize_result(tool: Tool, file: str, result: Result):
-    if result.answer == "segfault":
+    if result.answer not in ["sat", "unsat", "unknown"]:
         if result.peak_memory_kbytes > options.args().memout:
             result.answer = "memout"
 
