@@ -16,7 +16,7 @@ def get_status_from_output(result: Result) -> str:
 
 def parse_stats(result: Result) -> bool:
     raw_output = result.stdout
-    i = raw_output.find("(")
+    i = raw_output.find("(:")
     if i < 0:
         return True
 
@@ -43,8 +43,8 @@ def parse_stats(result: Result) -> bool:
 
 
 class SMTRAT(Tool):
-    def __init__(self, command: str):
-        super().__init__(command, "SMTRAT")
+    def __init__(self, command: str, name="SMTRAT"):
+        super().__init__(command, name=name)
 
     def get_command_line(self, file: str) -> str:
         res = self.binary + " " + self.arguments + " " + file
@@ -76,7 +76,8 @@ class SMTRAT(Tool):
             case _:
                 result.answer = get_status_from_output(result)
         if options.args().statistics and not parse_stats(result):
-            logging.warn(f"Parsing statistics failed for {result.stdout}")
+            if result.answer in ["sat", "unsat", "unknown", "wrong", "success"]:
+                logging.warn(f"Parsing statistics failed for {result.stdout}")
 
 
 class SMTRAT_QE(SMTRAT):
@@ -84,7 +85,7 @@ class SMTRAT_QE(SMTRAT):
         super().__init__(command, "SMTRAT_QE")
 
     def parse_additional(self, result: Result):
-        m = re.match(".*Equivalent Quantifier-Free Formula:[^\n]*\n", result.stdout)
+        m = re.search(".*Equivalent Quantifier-Free Formula:[^\n]*\n", result.stdout)
         if m is not None:
             result.stdout = result.stdout[m.end() :]
         super().parse_additional(result)
