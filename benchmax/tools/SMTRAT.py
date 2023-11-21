@@ -26,9 +26,11 @@ def parse_stats(result: Result) -> bool:
 
     r_values = re.compile(r":(?P<key>\S+)\s+(?P<val>[^\s):]+)")
 
+    logging.debug("trying to find stats")
     m = re.match(r_category, raw_output[i:])
     if m is None:
         return False
+    logging.debug("got a match")
 
     while m != None:
         values = re.finditer(r_values, m.group("values"))
@@ -38,6 +40,7 @@ def parse_stats(result: Result) -> bool:
             )
         i += m.end()
         m = re.match(r_category, raw_output[i:])
+    logging.debug("processed all submatches")
 
     return True
 
@@ -85,7 +88,7 @@ class SMTRAT_QE(SMTRAT):
         super().__init__(command, "SMTRAT_QE")
 
     def parse_additional(self, result: Result):
-        m = re.search(".*Equivalent Quantifier-Free Formula:[^\n]*\n", result.stdout)
+        m = re.search("Equivalent Quantifier-Free Formula:[^\n]*\n", result.stdout)
         if m is not None:
             result.stdout = result.stdout[m.end() :]
         super().parse_additional(result)
