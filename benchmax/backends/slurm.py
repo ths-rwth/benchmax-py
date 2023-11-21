@@ -222,16 +222,16 @@ def all_jobs_finished(job_ids: list[int]) -> bool:
 def monitor_progress(total_tasks: int, job_ids: list[int]):
     update_period_s = 30
 
-    p1 = tqdm(total=total_tasks, position=0, desc="Started  tasks")
-    p2 = tqdm(total=total_tasks, position=1, desc="Finished tasks")
-    countdown = tqdm(total=10 * update_period_s, position=2, desc="Next update:")
+    p1 = tqdm(total=total_tasks, position=0, desc="Started  tasks", ncols=120)
+    p2 = tqdm(total=total_tasks, position=1, desc="Finished tasks", ncols=120)
+    p3 = tqdm(total=10 * update_period_s, position=2, desc="   Next update", ncols=120)
     current_finished = 0
     current_started = 0
-    with p1 as pbar_started, p2 as pbar_finished, countdown as pbar_c:
+    with p1 as pbar_started, p2 as pbar_finished, p3 as pbar_countdown:
         while current_finished < total_tasks:
             # give the server some rest before the next request
             for _ in range(10 * update_period_s):
-                pbar_c.update(1)
+                pbar_countdown.update(1)
                 time.sleep(0.1)
 
             logging.debug("querying slurm about running/pending tasks")
@@ -261,7 +261,7 @@ def monitor_progress(total_tasks: int, job_ids: list[int]):
                 break
 
             # reset "spinner"
-            pbar_c.update(-10 * update_period_s)
+            pbar_countdown.update(-10 * update_period_s)
 
 
 def cancel_jobs(job_ids: list[int]):
