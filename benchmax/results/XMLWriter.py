@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from datetime import timedelta
 import os.path
 import options
+from pathlib import Path
 
 from jobs import Jobs
 from results.Results import Results
@@ -138,7 +139,8 @@ class XMLWriter:
     filename: str
 
     def write(self, jobs: Jobs, results: Results):
-        with open(self.filename, "a+") as file:
+        Path(self.filename).parents[0].mkdir(parents=True, exist_ok=True)
+        with open(self.filename, "w") as file:
             file.write('<?xml version="1.0"?>\n')
             write_results(jobs, results, file)
 
@@ -152,6 +154,7 @@ class XMLWriter:
                 filename = filename + str(count) + ".xml"
             else:
                 filename = filename + ".xml"
-            with open(filename, "a+") as file:
+            Path(filename).parents[0].mkdir(parents=True, exist_ok=True)
+            with open(filename, "w") as file:
                 file.write('<?xml version="1.0"?>')
                 write_results(jobs, results, file, [t])
