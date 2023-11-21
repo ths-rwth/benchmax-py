@@ -39,6 +39,8 @@ def local(jobs: Jobs):
     results = Results()
 
     # TODO: multiprocessing?
+    # if we write the result immediately, this could work without sharing to much data
+    # Or write the output into single files like with slurm
     for tool, file in tqdm(jobs.jobs, total=len(jobs.jobs)):
         process(tool, file, results)
 
