@@ -68,7 +68,7 @@ def generate_submit_file_chunked(args: ChunkArgs) -> str:
                 "#SBATCH --mem-per-cpu ",
                 str(math.ceil(args.limit_mem_kb / 1000) + 1024) + "M\n",
                 # load environment TODO: this feels hacky? -> pass as option?
-                "source ~/load_environment\n",
+                "source " + options.args().slurm_env + "\n",
                 # change dir
                 "cd " + args.tmp_dir + "\n",
                 # calculate slices

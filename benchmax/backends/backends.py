@@ -82,6 +82,14 @@ def add_backend_options(parser: argparse.ArgumentParser):
         default=100,
     )
 
+    backend_group.add_argument(
+        "--slurm.env",
+        help="file for loading modules into the environment",
+        dest="slurm_env",
+        metavar="FILE",
+        default="~/load_environment",
+    )
+
     # SSH Backend Settings
     # TODO
 
