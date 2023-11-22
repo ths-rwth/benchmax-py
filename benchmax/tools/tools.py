@@ -2,6 +2,7 @@ import argparse
 from tools.Tool import Tool
 from tools.SMTRAT import SMTRAT, SMTRAT_QE
 from tools.Z3 import Z3, Z3_QE
+from tools.Redlog import Redlog
 
 
 def add_tool_options(parser: argparse.ArgumentParser):
@@ -52,5 +53,14 @@ def add_tool_options(parser: argparse.ArgumentParser):
         dest="tools",
         metavar="path",
         type=Z3_QE,
+        action="append",
+    )
+
+    tool_group.add_argument(
+        "--redlog",
+        help="redlog quantifier elimination",
+        dest="tools",
+        metavar="path",
+        type=Redlog,
         action="append",
     )
