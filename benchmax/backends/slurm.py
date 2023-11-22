@@ -234,7 +234,7 @@ def monitor_progress(total_tasks: int, job_ids: list[int]):
                 pbar_countdown.update(1)
                 time.sleep(0.1)
 
-            logging.debug("querying slurm about running/pending tasks")
+            logging.debug("\n\n\nquerying slurm about running/pending tasks")
             # check queue for running and pending tasks belonging to the jobs
             req = "squeue --noheader --array --states=PD,R"
             req += " --format=%t"
@@ -245,7 +245,7 @@ def monitor_progress(total_tasks: int, job_ids: list[int]):
             pending = response.stdout.count("PD")
             running = response.stdout.count("R")
             logging.debug("pending: " + str(pending))
-            logging.debug("running: " + str(running) + "\n\n\n")
+            logging.debug("running: " + str(running))
             new_started = total_tasks - pending
             new_finished = total_tasks - pending - running
             pbar_started.update(new_started - current_started)
