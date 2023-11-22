@@ -245,7 +245,7 @@ def monitor_progress(total_tasks: int, job_ids: list[int]):
             pending = response.stdout.count("PD")
             running = response.stdout.count("R")
             logging.debug("pending: " + str(pending))
-            logging.debug("running: " + str(running))
+            logging.debug("running: " + str(running) + "\n\n\n")
             new_started = total_tasks - pending
             new_finished = total_tasks - pending - running
             pbar_started.update(new_started - current_started)
