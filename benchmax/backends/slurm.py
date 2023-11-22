@@ -318,9 +318,9 @@ def slurm(jobs: Jobs):
     id_to_data = {}
 
     logging.info("parsing results")
-    for f in tqdm(out_files, desc="out files", ncols=120):
+    for f in out_files:
         parse_out_file(jobs, f, id_to_data)
-    for f in tqdm(err_files, desc="err files", ncols=120):
+    for f in err_files:
         parse_err_file(f, id_to_data)
 
     results = Results()
