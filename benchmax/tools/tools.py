@@ -3,6 +3,7 @@ from tools.Tool import Tool
 from tools.SMTRAT import SMTRAT, SMTRAT_QE
 from tools.Z3 import Z3, Z3_QE
 from tools.Redlog import Redlog
+from tools.CDD import CDD
 
 
 def add_tool_options(parser: argparse.ArgumentParser):
@@ -62,5 +63,14 @@ def add_tool_options(parser: argparse.ArgumentParser):
         dest="tools",
         metavar="path",
         type=Redlog,
+        action="append",
+    )
+
+    tool_group.add_argument(
+        "--cdd",
+        help="CDD polyhedron projection",
+        dest="tools",
+        metavar="path",
+        type=CDD,
         action="append",
     )
