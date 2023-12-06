@@ -3,7 +3,7 @@ import logging
 import re
 import subprocess
 
-from jobs import Jobs
+from benchmarks import Benchmarks
 import options
 from results.Results import Results
 from results.Result import Result
@@ -94,8 +94,8 @@ def add_backend_options(parser: argparse.ArgumentParser):
     # TODO
 
 
-def check_for_missing_results(jobs: Jobs, results: Results):
-    for tool, file in jobs.jobs:
+def check_for_missing_results(benchmarks: Benchmarks, results: Results):
+    for tool, file in benchmarks.pairs:
         res = results.get(tool, file)
         if not res and tool.can_handle(file):
             logging.warn(f"Missing result for {tool} on {file}")
@@ -123,13 +123,13 @@ def sanitize_result(tool: Tool, file: str, result: Result):
     # TODO: do more, also for memout?
 
 
-def write_results(jobs: Jobs, results: Results):
+def write_results(benchmarks: Benchmarks, results: Results):
     logging.info("Writing results to " + options.args().output_file)
     xml = XMLWriter(options.args().output_file)
     if options.args().split_xml:
-        xml.write_for_each_tool(jobs, results)
+        xml.write_for_each_tool(benchmarks, results)
     else:
-        xml.write(jobs, results)
+        xml.write(benchmarks, results)
 
 
 def call_program(cmd: str):

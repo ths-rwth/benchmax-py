@@ -3,7 +3,7 @@ import logging
 import os.path
 
 import options
-from jobs import Jobs
+from benchmarks import Benchmarks
 from backends.local import local
 from backends.slurm import slurm
 from BenchmaxException import BenchmaxException
@@ -43,7 +43,7 @@ def benchmax_main():
         options.args().common_tool_prefix += "/"
 
     # gather input files
-    logging.info("collecting benchmark files")
+    logging.info("collecting input files")
     files = sum(
         [
             [
@@ -57,23 +57,23 @@ def benchmax_main():
     )
     if len(files) == 0:
         raise BenchmaxException("No input files found!")
-    logging.info(f"number of collected benchmark files: {len(files)}")
+    logging.info(f"number of collected input files: {len(files)}")
 
     options.args().common_file_prefix = (
         os.path.commonpath([dir for dir in options.args().input_directories]) + "/"
     )
 
-    # create jobs
-    jobs = Jobs(tools, files)
-    if len(jobs) == 0:
+    # create benchmarking pairs
+    benchmarks = Benchmarks(tools, files)
+    if len(benchmarks) == 0:
         raise BenchmaxException("no valid input found for the given tools!")
-    logging.debug(f"number of jobs: {len(jobs)}")
+    logging.debug(f"number of tool-input pairings: {len(benchmarks)}")
 
     match options.args().backend:
         case "local":
-            local(jobs)
+            local(benchmarks)
         case "slurm":
-            slurm(jobs)
+            slurm(benchmarks)
         case "ssh":
             pass  # TODO: do stuff
 

@@ -3,7 +3,7 @@ from tqdm import tqdm
 from timeit import default_timer
 
 from backends.backends import *
-from jobs import Jobs
+from benchmarks import Benchmarks
 import options
 from results.Result import Result
 from results.Results import Results
@@ -35,14 +35,16 @@ def process(tool: Tool, file: str, results: Results):
     results.add_result(tool, file, result)
 
 
-def local(jobs: Jobs):
+def local(benchmarks: Benchmarks):
     results = Results()
 
     # TODO: multiprocessing?
     # if we write the result immediately, this could work without sharing to much data
     # Or write the output into single files like with slurm
-    for tool, file in tqdm(jobs.jobs, total=len(jobs.jobs)):
+    for tool, file in tqdm(
+        benchmarks.pairs, total=len(benchmarks.pairs), dynamic_ncols=True
+    ):
         process(tool, file, results)
 
-    check_for_missing_results(jobs, results)
-    write_results(jobs, results)
+    check_for_missing_results(benchmarks, results)
+    write_results(benchmarks, results)

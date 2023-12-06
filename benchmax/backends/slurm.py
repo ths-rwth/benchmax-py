@@ -13,18 +13,18 @@ from tqdm import tqdm
 
 from backends.backends import *
 from BenchmaxException import BenchmaxException
-from jobs import Jobs
+from benchmarks import Benchmarks
 import options
 
 
-def generate_jobs_file(filename: str, range: tuple[int, int], jobs: Jobs):
+def generate_jobs_file(filename: str, range: tuple[int, int], benchmarks: Benchmarks):
     logging.info("writing slurm jobs file to " + filename)
     with open(filename, "w+") as f:
         logging.debug("taking jobs " + str(range[0]) + ".." + str(range[1]))
         f.writelines(
             [
                 tool.get_command_line(file) + "\n"
-                for tool, file in jobs.jobs[range[0] : range[1]]
+                for tool, file in benchmarks.pairs[range[0] : range[1]]
             ]
         )
 
@@ -102,7 +102,7 @@ def generate_submit_file_chunked(args: ChunkArgs) -> str:
     return filename
 
 
-def run_job(args: tuple[int, Jobs, multiprocessing.Lock, list[int]]) -> int:
+def run_job(args: tuple[int, Benchmarks, multiprocessing.Lock, list[int]]) -> int:
     n, jobs, submission_mutex, job_ids = args
     jobs_filename = str(options.args().slurm_tmp_dir)
     jobs_filename += f"/jobs-{options.args().start_time}-{n-1}.jobs"
@@ -142,7 +142,7 @@ def run_job(args: tuple[int, Jobs, multiprocessing.Lock, list[int]]) -> int:
     job_ids.append(int(job_id.group(1)))
 
 
-def parse_out_file(jobs: Jobs, out_file: str, id_to_data):
+def parse_out_file(jobs: Benchmarks, out_file: str, id_to_data):
     with open(out_file, "r") as f:
         content_out = f.read()
 
@@ -222,9 +222,27 @@ def all_jobs_finished(job_ids: list[int]) -> bool:
 def monitor_progress(total_tasks: int, job_ids: list[int]):
     update_period_s = 30
 
-    p1 = tqdm(total=total_tasks, position=0, desc="Started  tasks", ncols=120)
-    p2 = tqdm(total=total_tasks, position=1, desc="Finished tasks", ncols=120)
-    p3 = tqdm(total=10 * update_period_s, position=2, desc="   Next update", ncols=120)
+    p1 = tqdm(
+        total=total_tasks,
+        position=0,
+        desc="Started  tasks",
+        ncols=100,
+        dynamic_ncols=True,
+    )
+    p2 = tqdm(
+        total=total_tasks,
+        position=1,
+        desc="Finished tasks",
+        ncols=100,
+        dynamic_ncols=True,
+    )
+    p3 = tqdm(
+        total=10 * update_period_s,
+        position=2,
+        desc="   Next update",
+        ncols=100,
+        dynamic_ncols=True,
+    )
     current_finished = 0
     current_started = 0
     with p1 as pbar_started, p2 as pbar_finished, p3 as pbar_countdown:
@@ -269,7 +287,7 @@ def cancel_jobs(job_ids: list[int]):
         call_program("scancel " + str(i))
 
 
-def slurm(jobs: Jobs):
+def slurm(benchmarks: Benchmarks):
     tmp_dir = str(os.path.normpath(options.args().slurm_tmp_dir))
     Path(tmp_dir).mkdir(parents=True, exist_ok=True)
 
@@ -279,7 +297,7 @@ def slurm(jobs: Jobs):
 
     # submit jobs
     jobs_per_batch = options.args().slurm_array_size * options.args().slurm_slice_size
-    count = math.ceil(len(jobs) / (jobs_per_batch))
+    count = math.ceil(len(benchmarks) / (jobs_per_batch))
     logging.info(f"creating {count} slurm job(s)")
 
     submission_mutex = multiprocessing.Lock()
@@ -291,7 +309,7 @@ def slurm(jobs: Jobs):
             list(
                 executor.map(
                     run_job,
-                    [(i, jobs, submission_mutex, job_ids) for i in range(count)],
+                    [(i, benchmarks, submission_mutex, job_ids) for i in range(count)],
                 )
             )
 
@@ -319,7 +337,7 @@ def slurm(jobs: Jobs):
 
     logging.info("parsing results")
     for f in out_files:
-        parse_out_file(jobs, f, id_to_data)
+        parse_out_file(benchmarks, f, id_to_data)
     for f in err_files:
         parse_err_file(f, id_to_data)
 
@@ -332,8 +350,8 @@ def slurm(jobs: Jobs):
         results.add_result(tool, file, result)
 
     # finalize
-    check_for_missing_results(jobs, results)
-    write_results(jobs, results)
+    check_for_missing_results(benchmarks, results)
+    write_results(benchmarks, results)
 
     if options.args().slurm_archive_logs is not None:
         dirname = options.args().slurm_tmp_dir

@@ -4,7 +4,7 @@ import os.path
 import options
 from pathlib import Path
 
-from jobs import Jobs
+from benchmarks import Benchmarks
 from results.Results import Results
 from results.Result import Result
 from tools.Tool import Tool
@@ -98,9 +98,11 @@ def write_file_results(
             write_run(f, tool, res)
 
 
-def write_results(jobs: Jobs, results: Results, file, tools: list[Tool] | None = None):
+def write_results(
+    benchmarks: Benchmarks, results: Results, file, tools: list[Tool] | None = None
+):
     if tools is None:
-        tools = jobs.tools
+        tools = benchmarks.tools
     with WriteXMLNode(file, 0, "results") as root:
         with root.write_child("information") as info:
             info.write_leaf(
@@ -130,7 +132,7 @@ def write_results(jobs: Jobs, results: Results, file, tools: list[Tool] | None =
         with root.write_child(
             "benchmarks", prefix=options.args().common_file_prefix
         ) as benchmarks:
-            for filename in jobs.files:
+            for filename in benchmarks.files:
                 write_file_results(benchmarks, filename, results, tools)
 
 
@@ -138,14 +140,14 @@ def write_results(jobs: Jobs, results: Results, file, tools: list[Tool] | None =
 class XMLWriter:
     filename: str
 
-    def write(self, jobs: Jobs, results: Results):
+    def write(self, benchmarks: Benchmarks, results: Results):
         Path(self.filename).parents[0].mkdir(parents=True, exist_ok=True)
         with open(self.filename, "w") as file:
             file.write('<?xml version="1.0"?>\n')
-            write_results(jobs, results, file)
+            write_results(benchmarks, results, file)
 
-    def write_for_each_tool(self, jobs: Jobs, results: Results):
-        for t in jobs.tools:
+    def write_for_each_tool(self, benchmarks: Benchmarks, results: Results):
+        for t in benchmarks.tools:
             filename = self.filename + "_" + sanitize_tool(t.binary)
             count = 1
             if os.path.isfile(filename + ".xml"):
@@ -157,4 +159,4 @@ class XMLWriter:
             Path(filename).parents[0].mkdir(parents=True, exist_ok=True)
             with open(filename, "w") as file:
                 file.write('<?xml version="1.0"?>')
-                write_results(jobs, results, file, [t])
+                write_results(benchmarks, results, file, [t])
