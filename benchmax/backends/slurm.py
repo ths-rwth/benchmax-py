@@ -316,8 +316,6 @@ def slurm(benchmarks: Benchmarks):
         logging.info("all jobs scheduled.")
 
         # continuously check status
-        logging.info("will try to track progress after 5 seconds")
-        time.sleep(5)
         total_tasks = count * options.args().slurm_array_size
         monitor_progress(total_tasks, job_ids)
     except:
