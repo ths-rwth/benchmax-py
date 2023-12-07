@@ -3,4 +3,4 @@ class BenchmaxException(Exception):
         self.__msg = msg
 
     def __str__(self):
-        return "[benchmax][ERROR]: {}".format(self.__msg)
+        return "Exception: {}".format(self.__msg)

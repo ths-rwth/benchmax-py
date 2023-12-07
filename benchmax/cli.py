@@ -13,7 +13,7 @@ def setup_logging():
     lvl = options.args().logging_level
     if lvl is None:
         lvl = logging.INFO
-    logging.basicConfig(format="[benchmax][%(levelname)s] %(message)s", level=lvl)
+    logging.basicConfig(format="[benchmax %(levelname)8s] %(message)s", level=lvl)
 
 
 def benchmax_main():

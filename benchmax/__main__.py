@@ -14,7 +14,7 @@ def main():
     except KeyboardInterrupt:
         logging.error("User abort!")
     except BenchmaxException as e:
-        print(e)
+        logging.error(e)
     return 1
 
 
