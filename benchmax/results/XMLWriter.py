@@ -131,9 +131,9 @@ def write_results(
 
         with root.write_child(
             "benchmarks", prefix=options.args().common_file_prefix
-        ) as benchmarks:
+        ) as benchmarks_node:
             for filename in benchmarks.files:
-                write_file_results(benchmarks, filename, results, tools)
+                write_file_results(benchmarks_node, filename, results, tools)
 
 
 @dataclass
@@ -148,7 +148,11 @@ class XMLWriter:
 
     def write_for_each_tool(self, benchmarks: Benchmarks, results: Results):
         for t in benchmarks.tools:
-            filename = self.filename + "_" + sanitize_tool(t.binary)
+            filename = (
+                self.filename.replace(".xml", "")
+                + "_"
+                + sanitize_tool(t.binary).replace("/", "_")
+            )
             count = 1
             if os.path.isfile(filename + ".xml"):
                 while os.path.isfile(filename + str(count) + ".xml"):
