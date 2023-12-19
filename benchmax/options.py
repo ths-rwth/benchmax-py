@@ -136,8 +136,6 @@ def parse_options(cmdlineoptions=None):
     if cmdlineoptions is None:
         cmdlineoptions = sys.argv[1:]
 
-    print(cmdlineoptions)
-
     for i in range(len(cmdlineoptions)):
         if cmdlineoptions[i] == "--config":
             if i + 1 < len(cmdlineoptions):
