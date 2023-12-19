@@ -133,14 +133,23 @@ def parse_options(cmdlineoptions=None):
     add_backend_options(ap)
     add_tool_options(ap)
 
+    if cmdlineoptions is None:
+        cmdlineoptions = sys.argv[1:]
+
+    print(cmdlineoptions)
+
+    for i in range(len(cmdlineoptions)):
+        if cmdlineoptions[i] == "--config":
+            if i + 1 < len(cmdlineoptions):
+                file = cmdlineoptions[i + 1]
+                with open(file) as f:
+                    import shlex
+
+                    opts = shlex.split(f.read().replace("\n", " "))
+                    cmdlineoptions += opts
+                break
+
     res = ap.parse_args(cmdlineoptions)
-
-    if res.config is not None:
-        with open(res.config, "r") as config:
-            import shlex
-
-            opts = shlex.split(config.read().replace("\n", " "))
-            ap.parse_args(sys.argv + opts)
 
     res.start_time = int(dt.datetime.now().timestamp())
 
