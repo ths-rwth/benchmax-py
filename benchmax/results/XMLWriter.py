@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from datetime import timedelta
+import logging
 import os.path
 import options
 from pathlib import Path
@@ -142,6 +143,7 @@ class XMLWriter:
 
     def write(self, benchmarks: Benchmarks, results: Results):
         Path(self.filename).parents[0].mkdir(parents=True, exist_ok=True)
+        logging.info("writing file " + self.filename)
         with open(self.filename, "w") as file:
             file.write('<?xml version="1.0"?>\n')
             write_results(benchmarks, results, file)
@@ -161,6 +163,7 @@ class XMLWriter:
             else:
                 filename = filename + ".xml"
             Path(filename).parents[0].mkdir(parents=True, exist_ok=True)
+            logging.info("writing file " + filename)
             with open(filename, "w") as file:
                 file.write('<?xml version="1.0"?>')
                 write_results(benchmarks, results, file, [t])

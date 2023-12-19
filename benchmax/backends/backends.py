@@ -124,7 +124,7 @@ def sanitize_result(tool: Tool, file: str, result: Result):
 
 
 def write_results(benchmarks: Benchmarks, results: Results):
-    logging.info("Writing results to " + options.args().output_file)
+    logging.info("Writing results")
     xml = XMLWriter(options.args().output_file)
     if options.args().split_xml:
         xml.write_for_each_tool(benchmarks, results)
