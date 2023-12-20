@@ -341,7 +341,7 @@ def slurm(benchmarks: Benchmarks):
 
     results = Results()
     for tool, file, result in tqdm(
-        id_to_data.values(), desc="gathering data", ncols=120
+        id_to_data.values(), desc="gathering data", ncols=100, dynamic_ncols=True
     ):
         tool.parse_additional(result)
         sanitize_result(tool, file, result)
