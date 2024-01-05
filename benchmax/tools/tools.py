@@ -1,9 +1,9 @@
 import argparse
-from tools.Tool import Tool
-from tools.SMTRAT import SMTRAT, SMTRAT_QE
-from tools.Z3 import Z3, Z3_QE
-from tools.Redlog import Redlog
-from tools.CDD import CDD
+from .Tool import Tool
+from .SMTRAT import SMTRAT, SMTRAT_QE
+from .Z3 import Z3, Z3_QE
+from .Redlog import Redlog
+from .CDD import CDD
 
 
 def add_tool_options(parser: argparse.ArgumentParser):

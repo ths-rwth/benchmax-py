@@ -1,8 +1,8 @@
 import re
 
-import options
-from results.Result import Result
-from tools.Tool import Tool
+from .. import options
+from ..results.Result import Result
+from .Tool import Tool
 
 
 class Z3(Tool):

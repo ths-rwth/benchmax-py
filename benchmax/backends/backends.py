@@ -3,12 +3,12 @@ import logging
 import re
 import subprocess
 
-from benchmarks import Benchmarks
-import options
-from results.Results import Results
-from results.Result import Result
-from results.XMLWriter import XMLWriter
-from tools.Tool import Tool
+from ..benchmarks import Benchmarks
+from .. import options
+from ..results.Results import Results
+from ..results.Result import Result
+from ..results.XMLWriter import XMLWriter
+from ..tools.Tool import Tool
 
 
 def add_backend_options(parser: argparse.ArgumentParser):

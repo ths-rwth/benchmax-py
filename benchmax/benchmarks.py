@@ -1,5 +1,6 @@
-from tools.Tool import Tool
 from random import shuffle
+
+from .tools.Tool import Tool
 
 
 class Benchmarks:

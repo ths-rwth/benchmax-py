@@ -1,6 +1,6 @@
-from results.Result import Result
-from tools.Tool import Tool
-import options
+from .. import options
+from ..results.Result import Result
+from .Tool import Tool
 
 
 class Redlog(Tool):

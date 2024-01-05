@@ -3,7 +3,7 @@ import logging
 import os
 import re
 
-from results.Result import Result
+from ..results.Result import Result
 
 
 @dataclass(unsafe_hash=True)

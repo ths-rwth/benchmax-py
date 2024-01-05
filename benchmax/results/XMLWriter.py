@@ -2,13 +2,13 @@ from dataclasses import dataclass
 from datetime import timedelta
 import logging
 import os.path
-import options
 from pathlib import Path
 
-from benchmarks import Benchmarks
-from results.Results import Results
-from results.Result import Result
-from tools.Tool import Tool
+from ..benchmarks import Benchmarks
+from ..results.Results import Results
+from ..results.Result import Result
+from ..tools.Tool import Tool
+from .. import options
 
 
 def attr_to_str(attr) -> str:

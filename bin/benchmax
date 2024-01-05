@@ -1,0 +1,17 @@
+#!/usr/bin/env python3
+
+import multiprocessing
+import os
+import sys
+
+if __name__ == '__main__':
+    # Ensure that child processes are forked. Some platforms, e.g., macOS,
+    # default to spawning child processes, which does not preserve the value of
+    # global variables.
+    multiprocessing.set_start_method('fork')
+
+    __root_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..')
+    sys.path.insert(0, __root_dir)
+
+    from benchmax import __main__
+    __main__.main()

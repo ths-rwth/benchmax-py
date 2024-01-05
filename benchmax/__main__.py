@@ -1,8 +1,8 @@
 import logging
 import sys
 
-import cli
-from BenchmaxException import BenchmaxException
+from . import cli
+from .BenchmaxException import BenchmaxException
 
 
 def main():

@@ -1,9 +1,9 @@
 import logging
 import re
 
-import options
-from results.Result import Result
-from tools.Tool import Tool
+from .. import options
+from ..results.Result import Result
+from .Tool import Tool
 
 
 def get_status_from_output(result: Result) -> str:

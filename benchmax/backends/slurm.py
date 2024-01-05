@@ -11,10 +11,10 @@ import re
 import time
 from tqdm import tqdm
 
-from backends.backends import *
-from BenchmaxException import BenchmaxException
-from benchmarks import Benchmarks
-import options
+from .backends import *
+from ..BenchmaxException import BenchmaxException
+from ..benchmarks import Benchmarks
+from .. import options
 
 
 def generate_jobs_file(filename: str, range: tuple[int, int], benchmarks: Benchmarks):

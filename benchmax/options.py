@@ -4,8 +4,8 @@ import logging
 import re
 import sys
 
-from backends.backends import add_backend_options
-from tools.tools import add_tool_options
+from .backends.backends import add_backend_options
+from .tools.tools import add_tool_options
 
 
 def parse_timeout(time_str: str) -> int:

@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 
-from results.Result import Result
-from tools.Tool import Tool
+from .Result import Result
+from ..tools.Tool import Tool
 
 
 @dataclass

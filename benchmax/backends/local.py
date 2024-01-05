@@ -2,12 +2,12 @@ from datetime import timedelta
 from tqdm import tqdm
 from timeit import default_timer
 
-from backends.backends import *
-from benchmarks import Benchmarks
-import options
-from results.Result import Result
-from results.Results import Results
-from tools.Tool import Tool
+from .backends import *
+from ..benchmarks import Benchmarks
+from .. import options
+from ..results.Result import Result
+from ..results.Results import Results
+from ..tools.Tool import Tool
 
 
 def process(tool: Tool, file: str, results: Results):

@@ -2,11 +2,11 @@ import glob
 import logging
 import os.path
 
-import options
-from benchmarks import Benchmarks
-from backends.local import local
-from backends.slurm import slurm
-from BenchmaxException import BenchmaxException
+from . import options
+from .benchmarks import Benchmarks
+from .backends.local import local
+from .backends.slurm import slurm
+from .BenchmaxException import BenchmaxException
 
 
 def setup_logging():

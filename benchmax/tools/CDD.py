@@ -1,7 +1,7 @@
 import re
 
-from results.Result import Result
-from tools.Tool import Tool
+from ..results.Result import Result
+from .Tool import Tool
 
 
 class CDD(Tool):
