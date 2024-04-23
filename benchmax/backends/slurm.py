@@ -17,15 +17,11 @@ from ..benchmarks import Benchmarks
 from .. import options
 
 
-def generate_jobs_file(filename: str, range: tuple[int, int], benchmarks: Benchmarks):
+def generate_jobs_file(filename: str, benchmarks: Benchmarks):
     logging.info("writing slurm jobs file to " + filename)
     with open(filename, "w+") as f:
-        logging.debug("taking jobs " + str(range[0]) + ".." + str(range[1]))
         f.writelines(
-            [
-                tool.get_command_line(file) + "\n"
-                for tool, file in benchmarks.pairs[range[0] : range[1]]
-            ]
+            [tool.get_command_line(file) + "\n" for tool, file in benchmarks.pairs]
         )
 
 
@@ -39,7 +35,7 @@ class ChunkArgs:
     limit_mem_kb: int  # TODO memory type?
     array_size: int
     slice_size: int
-    job_range: tuple[int, int]
+    n_tasks: int
 
 
 def generate_submit_file_chunked(args: ChunkArgs) -> str:
@@ -76,9 +72,9 @@ def generate_submit_file_chunked(args: ChunkArgs) -> str:
                 "max=$SLURM_ARRAY_TASK_MAX\n",
                 "cur=$SLURM_ARRAY_TASK_ID\n",
                 "slicesize=" + str(args.slice_size) + "\n",
-                f"start=$(( (cur - 1) * slicesize + 1 + {args.job_range[0]} ))\n",
-                f"end=$(( start + slicesize - 1 + {args.job_range[0]} ))\n",
-                f"end=$((end<{args.job_range[1]} ? end : {args.job_range[1]}))\n",
+                f"start=$(( (cur - 1) * slicesize + 1 ))\n",
+                f"end=$(( start + slicesize - 1 ))\n",
+                f"end=$(( end<{args.n_tasks} ? end : {args.n_tasks}))\n",
                 # Execute this slice
                 "for i in `seq ${start} ${end}`; do\n",
                 "lineidx=$(( i - " + str(args.job_range[0]) + " ))\n",
@@ -102,44 +98,41 @@ def generate_submit_file_chunked(args: ChunkArgs) -> str:
     return filename
 
 
-def run_job(args: tuple[int, Benchmarks, multiprocessing.Lock, list[int]]) -> int:
-    n, jobs, submission_mutex, job_ids = args
-    jobs_filename = str(options.args().slurm_tmp_dir)
-    jobs_filename += f"/jobs-{options.args().start_time}-{n-1}.jobs"
-    job_size = options.args().slurm_array_size * options.args().slurm_slice_size
-    job_range = (job_size * n, min(job_size * (n + 1), len(jobs)))
-    generate_jobs_file(jobs_filename, job_range, jobs)
+def run_job(jobs: Benchmarks, array_size: int, slice_size: int) -> int:
+    jobs_filename = (
+        f"{options.args().slurm_tmp_dir}/jobs-{options.args().start_time}.jobs"
+    )
+
+    generate_jobs_file(jobs_filename, jobs)
 
     submitfile = generate_submit_file_chunked(
         ChunkArgs(
-            str(options.args().start_time) + "-" + str(n),
+            str(options.args().start_time),
             jobs_filename,
             options.args().slurm_tmp_dir,
             options.args().timeout,
             options.args().gracetime,
             options.args().memout,
-            options.args().slurm_array_size,
-            options.args().slurm_slice_size,
-            job_range,
+            array_size,
+            slice_size,
+            len(jobs),
         )
     )
 
-    logging.info(f"delaying for {options.args().slurm_submit_delay}ms")
-
-    with submission_mutex:
-        time.sleep(options.args().slurm_submit_delay / 1000)  # delay is ms
-
     logging.info("submitting job now")
 
-    cmd = "sbatch --array=1-" + str(options.args().slurm_array_size)
-    cmd += " " + options.args().slurm_sbatch_options
-    cmd += " " + submitfile
+    res = call_program(
+        f"sbatch --array=1-{array_size} "
+        + options.args().slurm_sbatch_options
+        + " "
+        + submitfile
+    )
+    # TODO: what if slurm does not work at all?
 
-    res = call_program(cmd)  # TODO: what if slurm does not work at all?
     job_id = re.search("Submitted batch job ([0-9]+)", res.stdout)
     if job_id is None:
         raise BenchmaxException("unable to obtain job id from slurm output!")
-    job_ids.append(int(job_id.group(1)))
+    return int(job_id.group(1))
 
 
 def parse_out_file(jobs: Benchmarks, out_file: str, id_to_data):
@@ -206,20 +199,19 @@ def parse_err_file(err_file: str, id_to_data):
         res.peak_memory_kbytes = parse_peak_memory(res.stderr)
 
 
-def all_jobs_finished(job_ids: list[int]) -> bool:
+def job_finished(job_id: int) -> bool:
     finished_states = ["COMPLETED", "CANCELLED", "TIMEOUT"]
-    for i in job_ids:
-        cmd = "sacct --noheader -o state  -j " + str(i)
-        output = call_program(cmd)
-        for line in output.stdout.splitlines():
-            if len(line) <= 1:
-                continue
-            if not any([state in line for state in finished_states]):
-                return False
+    cmd = "sacct --noheader -o state  -j " + str(job_id)
+    output = call_program(cmd)
+    for line in output.stdout.splitlines():
+        if len(line) <= 1:
+            continue
+        if not any([state in line for state in finished_states]):
+            return False
     return True
 
 
-def monitor_progress(total_tasks: int, job_ids: list[int]):
+def monitor_progress(total_tasks: int, job_id: int):
     update_period_s = 30
 
     p1 = tqdm(
@@ -256,7 +248,7 @@ def monitor_progress(total_tasks: int, job_ids: list[int]):
             # check queue for running and pending tasks belonging to the jobs
             req = "squeue --noheader --array --states=PD,R"
             req += " --format=%t"
-            req += " --jobs=" + ",".join([str(i) for i in job_ids]) + ""
+            req += " --jobs=" + str(job_id)
             logging.debug(req)
             response = call_program(req)  # TODO: what if it does not work?
             # count running and pending tasks
@@ -271,9 +263,9 @@ def monitor_progress(total_tasks: int, job_ids: list[int]):
             current_started = new_started
             current_finished = new_finished
 
-            # if all jobs are finished (despite different counts), exit loop
-            if all_jobs_finished(job_ids):
-                logging.debug("all jobs finished according to sacct")
+            # if all tasks are finished (despite different counts), exit loop
+            if job_finished(job_id):
+                logging.debug("array job finished according to sacct")
                 pbar_started.update(total_tasks - current_started)
                 pbar_finished.update(total_tasks - current_finished)
                 break
@@ -282,9 +274,8 @@ def monitor_progress(total_tasks: int, job_ids: list[int]):
             pbar_countdown.update(-10 * update_period_s)
 
 
-def cancel_jobs(job_ids: list[int]):
-    for i in job_ids:
-        call_program("scancel " + str(i))
+def cancel_job(job_id: int):
+    call_program("scancel " + str(job_id))
 
 
 def slurm(benchmarks: Benchmarks):
@@ -295,32 +286,19 @@ def slurm(benchmarks: Benchmarks):
     for f in glob.glob(tmp_dir + "/*"):
         os.remove(f)
 
-    # submit jobs
-    jobs_per_batch = options.args().slurm_array_size * options.args().slurm_slice_size
-    count = math.ceil(len(benchmarks) / (jobs_per_batch))
-    logging.info(f"creating {count} slurm job(s)")
-
-    submission_mutex = multiprocessing.Lock()
-
-    job_ids = []
-
     try:
-        with ThreadPoolExecutor(max_workers=min(count, 8)) as executor:
-            list(
-                executor.map(
-                    run_job,
-                    [(i, benchmarks, submission_mutex, job_ids) for i in range(count)],
-                )
-            )
-
-        logging.info("all jobs scheduled.")
+        # submit job
+        array_size = min(len(benchmarks), options.args().slurm_array_size)
+        slice_size = math.ceil(len(benchmarks) / array_size)
+        array_size = math.ceil(len(benchmarks) / slice_size)
+        job_id = run_job(benchmarks, array_size, slice_size)
+        logging.info(f"job {job_id} scheduled.")
 
         # continuously check status
-        total_tasks = count * options.args().slurm_array_size
-        monitor_progress(total_tasks, job_ids)
+        monitor_progress(array_size, job_id)
     except:
         logging.error("some exception occurred, will cancel slurm jobs")
-        cancel_jobs(job_ids)
+        cancel_job(job_id)
         raise
 
     # collect jobs

@@ -51,16 +51,8 @@ def add_backend_options(parser: argparse.ArgumentParser):
 
     backend_group.add_argument(
         "--slurm.array-size",
-        help="size of slurm job arrays",
+        help="maximum size of slurm job arrays",
         dest="slurm_array_size",
-        metavar="SIZE",
-        type=options.positive_int,
-    )
-
-    backend_group.add_argument(
-        "--slurm.slice-size",
-        help="number of benchmarks per slurm array task",
-        dest="slurm_slice_size",
         metavar="SIZE",
         type=options.positive_int,
     )
@@ -71,15 +63,6 @@ def add_backend_options(parser: argparse.ArgumentParser):
         dest="slurm_sbatch_options",
         metavar="OPTIONS",
         type=str,
-    )
-
-    backend_group.add_argument(
-        "--slurm.submit-delay",
-        help="delay between job submissions (in milliseconds)",
-        dest="slurm_submit_delay",
-        metavar="TIME",
-        type=options.positive_int,
-        default=100,
     )
 
     backend_group.add_argument(
