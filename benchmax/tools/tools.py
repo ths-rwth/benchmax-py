@@ -7,13 +7,13 @@ from .CDD import CDD
 
 
 def add_tool_options(parser: argparse.ArgumentParser):
-    tool_group = parser.add_argument_group("Tool options")
+    tool_group = parser.add_argument_group("tool options")
 
     tool_group.add_argument(
         "--tool",
         help="A generic tool to evaluate",
         dest="tools",
-        metavar="path",
+        metavar="PATH",
         type=Tool,
         action="append",
     )
@@ -23,7 +23,7 @@ def add_tool_options(parser: argparse.ArgumentParser):
         "--smtrat",
         help="An SMT-RAT tool with SMT-Lib interface",
         dest="tools",
-        metavar="path",
+        metavar="PATH",
         type=SMTRAT,
         action="append",
     )
@@ -33,7 +33,7 @@ def add_tool_options(parser: argparse.ArgumentParser):
         "--smtrat-qe",
         help="An SMT-RAT quantifier elimination tool with SMT-Lib interface",
         dest="tools",
-        metavar="path",
+        metavar="PATH",
         type=SMTRAT_QE,
         action="append",
     )
@@ -43,7 +43,7 @@ def add_tool_options(parser: argparse.ArgumentParser):
         "--z3",
         help="z3 with SMT-Lib interface",
         dest="tools",
-        metavar="path",
+        metavar="PATH",
         type=Z3,
         action="append",
     )
@@ -52,7 +52,7 @@ def add_tool_options(parser: argparse.ArgumentParser):
         "--z3-qe",
         help="z3 for linear quantifier elimination with SMT-Lib interface",
         dest="tools",
-        metavar="path",
+        metavar="PATH",
         type=Z3_QE,
         action="append",
     )
@@ -61,7 +61,7 @@ def add_tool_options(parser: argparse.ArgumentParser):
         "--redlog",
         help="redlog quantifier elimination",
         dest="tools",
-        metavar="path",
+        metavar="PATH",
         type=Redlog,
         action="append",
     )
@@ -70,7 +70,7 @@ def add_tool_options(parser: argparse.ArgumentParser):
         "--cdd",
         help="CDD polyhedron projection",
         dest="tools",
-        metavar="path",
+        metavar="PATH",
         type=CDD,
         action="append",
     )
