@@ -23,6 +23,9 @@ def benchmax_main():
         print(options.args())
         return
 
+    if (options.args().csv_file is None) and (options.args().xml_file is None):
+        raise BenchmaxException("No output file specified!")
+
     # gather tools
     if options.args().tools is None:
         raise BenchmaxException("No tools specified!")

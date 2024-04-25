@@ -8,11 +8,12 @@ from .. import options
 from ..results.Results import Results
 from ..results.Result import Result
 from ..results.XMLWriter import XMLWriter
+from ..results.CSVWriter import *
 from ..tools.Tool import Tool
 
 
 def add_backend_options(parser: argparse.ArgumentParser):
-    backend_group = parser.add_argument_group("Backend options")
+    backend_group = parser.add_argument_group("backend options")
 
     backend_group.add_argument(
         "-b",
@@ -59,7 +60,7 @@ def add_backend_options(parser: argparse.ArgumentParser):
 
     backend_group.add_argument(
         "--slurm.sbatch-options",
-        help="additional slurm sbatch options",
+        help="additional slurm sbatch options as a string in quotes",
         dest="slurm_sbatch_options",
         metavar="OPTIONS",
         type=str,
@@ -108,11 +109,18 @@ def sanitize_result(tool: Tool, file: str, result: Result):
 
 def write_results(benchmarks: Benchmarks, results: Results):
     logging.info("Writing results")
-    xml = XMLWriter(options.args().output_file)
-    if options.args().split_xml:
-        xml.write_for_each_tool(benchmarks, results)
-    else:
-        xml.write(benchmarks, results)
+
+    if not (options.args().csv_file is None):
+        if options.args().split_output:
+            write_csv_for_each_tool(benchmarks, results, options.args().csv_file)
+        else:
+            write_results_csv(benchmarks, results, options.args().csv_file)
+    elif not (options.args().xml_file is None):
+        xml = XMLWriter(options.args().xml_file)
+        if options.args().split_output:
+            xml.write_for_each_tool(benchmarks, results)
+        else:
+            xml.write(benchmarks, results)
 
 
 def call_program(cmd: str):

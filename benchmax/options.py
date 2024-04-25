@@ -78,16 +78,23 @@ def parse_options(cmdlineoptions=None):
         "-X",
         "--output-xml",
         help="filename for xml output file. "
-        + "Used as common prefix if split-xml is enabled",
-        required=True,
-        metavar="filename",
-        dest="output_file",
+        + "Used as common prefix if split-output is enabled",
+        metavar="FILE",
+        dest="xml_file",
     )
     output_group.add_argument(
-        "--split-xml",
-        help="split output data into one xml per tool",
+        "-C",
+        "--output-csv",
+        help="filename for csv output file. "
+        + "Used as common prefix if split-output is enabled",
+        metavar="FILE",
+        dest="csv_file",
+    )
+    output_group.add_argument(
+        "--split-output",
+        help="split output data into one file per tool",
         action="store_true",
-        dest="split_xml",
+        dest="split_output",
     )
     output_group.add_argument(
         "-s", "--statistics", help="collect statistics if possible", action="store_true"
