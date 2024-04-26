@@ -1,18 +1,71 @@
 # Benchmax: an automated benchmarking utility
 
-This is work in progress. Contact Valentin (promies at cs dot rwth-aachen.de).
+This is work in progress. For questions, contact Valentin (promies at cs dot rwth-aachen.de).
+
+Benchmax is a tool for automated benchmarking, mainly aimed at SMT solvers, though it can be used for evaluating other tools as well.
+
+Its fundamental model is to load a list of tools and a list of benchmarks, run every tool with every benchmark, obtain the results, collect statistics and write the gathered data into an output file.
+We allow choosing between different tool interfaces, execution backends and output formats.
 
 ## Getting started
 
-You can install this project as a package using pip:
+After downloading the repository, you can install this project as a package using pip:
 ```
 pip install -e <path/to/benchmax-py>
 ```
+The `-e` (for "editable") allows you to edit/update this repository without needing to reinstall benchmax.
 
-This will allow you to import the sources of this project like e.g.
+This installs the executable(s) found in `benchmax-py/bin`, which lets you call the command `benchmax` from anywhere (a more detailed explanation for the command follows below). Note that the directory to which the scripts are installed might need to be added to your `PATH`.
+
+This will also allow you to import the sources of this project, if you want to call the functions from python or, more importantly, if you want to use the included utilities for inspecting the benchmarking results.
 ```python
 import benchmax.inspection as ev
 ```
-It also installs the executable(s) found in `benchmax-py/bin`, which lets you call the command `benchmax` from anywhere. Note that the directory to which the scripts are installed might need to be added to your `PATH`.
 
-The `-e` (for ``editable'') allows you to edit/update this repository without needing to reinstall benchmax.
+## Benchmarking
+
+The general idea of benchmax is that you have a list of tools, each of which you want to evaluate on all test cases (benchmarks) within one or more given directories.
+
+That is, for each tool-test-pair, benchmax executes the tool on the test case and gathers statistics like the result, runtime and memory consumption, but it can also collect custom statistics from the output, if an appropriate parser for the given tool is provided (See Section Tools below).
+
+A usual call to benchmax looks something like this:
+```
+benchmax -T 1m -M 2G -b local -S smtrat-static -D QF_NRA -C output.csv
+```
+This would use the local backend (more on backends later) to benchmark the `smtrat-static` tool on all instances contained in the `QF_NRA`folder with a timeout of 1 minute and memory limit of 2 GB per instance, and the results would be written to `output.csv`.
+
+More generally, calls should have this form:
+
+```
+benchmax <limit opts> <backend opts> <tool opts> <input opts> <output opts> [other opts] 
+```
+
+The following table explains the options in more detail:
+
+| Category | Option | Explanation | Type |
+|----------|--------|-------------|----------|
+| Limit Options | `-T/--timeout <time>` | the time limit per instance. The value should be formatted like `[<hours>h][<minutes>m][<seconds>s]`, e.g. 1h or 1m30s| required |
+|| `-M/--memout <memory>` | the memory limit per instance. The value should be a positive integer followed by one of the units `K/Ki` (kilobytes), `M/Mi` (Megabytes) or `G/Gi` (Gigabytes), e.g. 2GB. | required |
+| Backend Options | `-b/--backend <backend>` | the backend to use. Currently, the backend can only be `local` or `slurm`. More information on backends below. | required |
+| Tool Options | `--tool/-S/-Z/... <path>` | the tool(s) to evaluate. For generic tools without custom parser, `--tool` can be used. For some tools, benchmax provides custom parsers, e.g. SMT-RAT (`-S`) or z3 (`-Z`). For a complete list, see Section "Tools" | one ore more |
+|| `-s/--statistics` | collect additional statistics, if possible. For example, SMT-RAT and z3 can provide such statistics. | optional |
+| Input Options | `-D/--directory <path>` | path to a directory containing the test cases. All files the the given directories **and their subdirectories** will be considered. | one or more|
+| Output Options | `-C/--output-csv <file.csv>` | name of a CSV file to which the output should be written. **Recommended format.** | required unless `-X` is set |
+|  | `-X/--output-xml <file.xml>` | name of an XML file to which the output should be written. | required unless `-C` is set |
+|  | `--split-output` | split output into one file for each tool. The output files will be prefixed with the name given for `-C/-X`| optional |
+| Other Options | `-h/--help` | show help message| optional |
+|  | `--settings` | show used settings without executing | optional |
+|  | `--verbose` | show debug level output | optional |
+|  | `--quiet` | show only the most important output | optional |
+|  | `--config <configfile>` | load options from the given config file (more information below). | optional, 0 or more|
+
+
+### Configuration Files
+
+### Local Backend
+
+### Slurm Backend
+
+### Tools
+
+## Analyzing the Results
