@@ -21,7 +21,7 @@ def parse_stats(result: Result) -> bool:
         return True
 
     r_category = re.compile(
-        r"\(:(?P<prefix>\S+)\s+\(\s*(?P<values>(?::\S+\s+\S+\s*)+)(?P<tail>\)\s*\)\s*)"
+        r"\(:(?P<prefix>\S+)\s+\(\s*(?P<values>(?::\S+\s+\S*\s*)+)(?P<tail>\)\s*\)\s*)"
     )
 
     r_values = re.compile(r":(?P<key>\S+)\s+(?P<val>[^\s):]+)")
