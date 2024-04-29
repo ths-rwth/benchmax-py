@@ -91,7 +91,7 @@ Currently, there are custom output parsers for the following tools:
 - `-Z/--z3`: the z3 SMT solver, with SMT-LIB interface
 - `--z3-qe`: z3 when used for quantifier elimination, with SMT-LIB interface
 - `--redlog`: redlog quantifier elimination (handles .red files)
-- `--cdd`: polyhedron projection with CDDlib
+- `--cdd`: polyhedron projection with CDDlib (.ine files)
 - `--tool`: any generic tool, without custom output parsing.
 
 To add a new tool, create a new subclass of `benchmax.tools.Tool` and implement `get_command_line`, `can_handle` and `parse_additional` to your needs.
