@@ -77,7 +77,7 @@ def generate_submit_file_chunked(args: ChunkArgs) -> str:
                 f"end=$(( end<{args.n_tasks} ? end : {args.n_tasks}))\n",
                 # Execute this slice
                 "for i in `seq ${start} ${end}`; do\n",
-                "lineidx=$(( i - " + str(args.job_range[0]) + " ))\n",
+                "lineidx=$(( i ))\n",
                 '\tcmd=$(time sed -n "${lineidx}p" < ' + args.filename_joblist + ")\n",
                 '\techo "Executing $cmd"\n',
                 '\techo "# START ${i} #"\n',
