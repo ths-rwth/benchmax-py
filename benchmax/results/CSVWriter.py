@@ -36,6 +36,7 @@ def write_results_csv(
         second_row += list(columns_dict[t])
 
     # write the actual results
+    logging.info("writing results to " + str(filename))
     with open(filename, "w", newline="") as csvfile:
         writer = csv.writer(csvfile)
         writer.writerows([first_row, second_row])

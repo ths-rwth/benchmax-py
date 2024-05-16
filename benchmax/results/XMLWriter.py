@@ -143,7 +143,7 @@ class XMLWriter:
 
     def write(self, benchmarks: Benchmarks, results: Results):
         Path(self.filename).parents[0].mkdir(parents=True, exist_ok=True)
-        logging.info("writing file " + self.filename)
+        logging.info("writing results to " + self.filename)
         with open(self.filename, "w") as file:
             file.write('<?xml version="1.0"?>\n')
             write_results(benchmarks, results, file)
@@ -163,7 +163,7 @@ class XMLWriter:
             else:
                 filename = filename + ".xml"
             Path(filename).parents[0].mkdir(parents=True, exist_ok=True)
-            logging.info("writing file " + filename)
+            logging.info("writing results to " + filename)
             with open(filename, "w") as file:
                 file.write('<?xml version="1.0"?>')
                 write_results(benchmarks, results, file, [t])
