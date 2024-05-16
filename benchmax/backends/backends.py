@@ -60,9 +60,9 @@ def add_backend_options(parser: argparse.ArgumentParser):
 
     backend_group.add_argument(
         "--slurm.sbatch-options",
-        help="additional slurm sbatch options as a string in quotes",
+        help="additional slurm sbatch options as a string in quotes (note the =)",
         dest="slurm_sbatch_options",
-        metavar="OPTIONS",
+        metavar="=OPTIONS",
         type=str,
     )
 

@@ -80,7 +80,7 @@ This requires additional options:
 - `--slurm.keep-logs` (optional): keep the temporary result files instead of deleting them at the end.
 - `--slurm.archive-logs <archive-name>` (optional): store temporary files in a tgz archive with the given name.
 - `--slurm.array-size <size>` (required): maximum size of the job array. If there are fewer tool-file pairs, the array is shrinked to fit.
-- `--slurm.sbatch-options <option-string>` (required): additional options to pass to slurm, in quotes.
+- `--slurm.sbatch-options=<option-string>` (required): additional options to pass to slurm, in quotes. **Important:** the `=` is needed to prevent that `argparse` interprets these as `benchmax`-options.
 - `--slurm.env <file>` (optional): file for loading an environment (needed on the RWTH-Cluster). As a default `load_environment` is assumed.
 
 ### Tools
