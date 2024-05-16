@@ -102,14 +102,12 @@ To pass a tool with specific program options to benchmax, put the tool and optio
 
 ## Analyzing the Results
 
-In its `benchmax.inspection` module, Benchmax provides some utilities for inspecting the resulting CSV or XML files. Note that most of these utilities are very much tailored to the context of SMT solvers and not really suited for other tools.
+In its `benchmax.inspection` module, Benchmax provides some utilities for inspecting the resulting CSV or XML files.
+Note that most of these utilities are very much tailored to the context of SMT solvers and not really suited for other tools.
 
 As mentioned before, this module can be loaded to a python script or jupyter notebook using e.g.
 ```python
 import benchmax.inspection as bi
 ```
 
-To load a file into a Pandas DataFrame, call `csv_to_pandas` or `xml_to_pandas`.
-If your file contains data for multiple tools, the DataFrame will have 2-level-columns of the form `(tool,stat)`.
-
-The file `inspection.py` provides some basic summaries of the data, and `plots.py` provides functions for scatter plots and performance profiles. The plots can be saved in LaTeX format, using `tikzplotlib`, though this might require downgrading your `matplotlib` version.
+You can find an [example jupyter notebook](examples/inspection-example.ipynb) illustrating the inspection utilities in the `examples` folder.
