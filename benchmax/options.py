@@ -46,7 +46,7 @@ def parse_options(cmdlineoptions=None):
     ap = argparse.ArgumentParser(
         prog="benchmax",
         description="Automated benchmarking for multiple tools.",
-        epilog="For further information, consult the documentation at TODO",
+        epilog="For further information, consult the documentation at https://git.rwth-aachen.de/ths/smt/benchmax-py",
     )
 
     ap.add_argument("--settings", help="show used settings", action="store_true")
