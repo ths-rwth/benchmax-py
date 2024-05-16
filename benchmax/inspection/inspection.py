@@ -3,6 +3,10 @@ from .data import *
 
 
 def inspect_answer(df, avg_runtimes=False):
+    """
+    returns a DataFrame containing the counts of how often which solver gave which answer.
+    if avg_runtimes is set, then for each answer also the average runtime of each solver is computed
+    """
     solvers = get_solvers(df)
     answers = [
         "sat",
@@ -82,18 +86,27 @@ def inspect_answer(df, avg_runtimes=False):
 
 
 def inspect_wrongs(df, solver=None):
+    """
+    returns a DataFrame containing those rows for which 'solver' gives a wrong answer, sorted by runtime
+    """
     if solver is None and len(get_solvers(df)) == 1:
         solver = get_solvers(df)[0]
     return df[df[(solver, "answer")] == "wrong"].sort_values(by=(solver, "runtime"))
 
 
 def inspect_segfaults(df, solver=None):
+    """
+    returns a DataFrame containing those rows for which 'solver' gives a segfault, sorted by runtime
+    """
     if solver is None and len(get_solvers(df)) == 1:
         solver = get_solvers(df)[0]
     return df[df[(solver, "answer")] == "segfault"].sort_values(by=(solver, "runtime"))
 
 
 def inspect(df):
+    """
+    prints the result of 'inspect_answer' and some basic information about wrongs and segfaults for each solver.
+    """
     ai = inspect_answer(df)
     print(ai)
 

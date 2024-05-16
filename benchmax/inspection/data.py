@@ -14,6 +14,7 @@ def get_fields(df, solver):
     return fields
 
 
+# is only used by virtual_best
 def compare_results(answer1, time1, answer2, time2):
     if answer1 in ["sat", "unsat"] and not answer2 in ["sat", "unsat"]:
         return True
@@ -39,6 +40,11 @@ def compare_results(answer1, time1, answer2, time2):
 
 
 def virtual_best(df, solvers, name, statistics=[]):
+    """
+    computes a virtual best solver with the given name from the given solvers:
+    for each row of df, the fastest solver defines the basic data (and the specified statistics) of the virtual best.
+    Returns a df containing only the data of the virtual best.
+    """
     data = []
     for _, row in df.iterrows():
         s = solvers[0]
@@ -82,6 +88,7 @@ def filter(df, solved_by=[], not_solved_by=[]):
     return df
 
 
+# basically only used by performance_profile
 def cumulate_by_column(df, column):
     df.loc[:, "num"] = 1
     df = df.groupby([column]).count()
@@ -92,6 +99,11 @@ def cumulate_by_column(df, column):
 
 
 def solved_by_class(df, solvers):
+    """
+    if the benchmark instances are structured into multiple directories,
+    then this can be used to get (as the returned df) the number of solved instances
+    for each of the given solvers and each of these directories.
+    """
     df = df.loc[:, [(s, "answer") for s in solvers]]
     df = df.droplevel(1, 1)
     df = df.replace(

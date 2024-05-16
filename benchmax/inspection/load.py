@@ -3,6 +3,7 @@ import xml.etree.ElementTree as ET
 import pandas as pd
 
 
+# auxiliary method used by xml_to_pandas
 def process_run(run, file, timeout, statistics):
     solver = run.attrib["solver_id"]
     filename = file.attrib["name"]
