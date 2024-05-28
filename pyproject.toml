@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools", "setuptools-scm"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "benchmax"
+authors = [
+    {name = "Valentin Promies", email = "promies@cs.rwth-aachen.de"},
+]
+description = "A benchmarking utility"
+readme = "README.md"
+requires-python = ">=3.6"
+keywords = ["python", "benchmax"]
+license = {text = "GPL"}
+dependencies = [
+    'importlib-metadata>=1.7',
+    'tqdm>=4.6',
+]
+version = "0.0.1"
+classifiers = [
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+    "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
+    "Programming Language :: Python :: 3",
+]
+
+[project.scripts]
+benchmax = "benchmax.__main__:main"
