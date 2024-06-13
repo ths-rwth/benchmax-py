@@ -111,3 +111,8 @@ import benchmax.inspection as bi
 ```
 
 You can find an [example jupyter notebook](examples/inspection-example.ipynb) illustrating the inspection utilities in the `examples` folder.
+
+## Hints
+
+If you are using VSCode and Pylance cannot resolve the import of (e.g.) `benchmax.inspection`, try adding the path of `benchmax-py` to the `python.analysis.extraPath` option in vscode settings (`settings.json`).
+The problem is related to using an editable installation with pip.
