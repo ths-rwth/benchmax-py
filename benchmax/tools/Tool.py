@@ -26,11 +26,13 @@ class Tool:
     def can_handle(self, file: str) -> bool:
         return True
 
+    # Important: the file has to be the last argument in the command
+    # so that escaping regex in parse_command_line works
     def get_command_line(self, file: str) -> str:
         return self.binary + " " + self.arguments + " " + file
 
     def parse_command_line(self, cmd: str) -> str | None:
-        pattern = re.compile(self.get_command_line("(.+)"))
+        pattern = re.compile(re.escape(self.get_command_line("")) + "(.+)")
         m = pattern.match(cmd)
         if m is None:
             return None

@@ -50,10 +50,10 @@ class SMTRAT(Tool):
         super().__init__(command, name=name)
 
     def get_command_line(self, file: str) -> str:
-        res = self.binary + " " + self.arguments + " " + file
+        res = self.binary + " " + self.arguments
         if options.args().statistics:
             res += " --stats.print"
-        return res
+        return res + " " + file
 
     def can_handle(self, file: str) -> bool:
         return file.endswith(".smt2")
