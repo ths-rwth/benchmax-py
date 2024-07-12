@@ -47,17 +47,28 @@ def benchmax_main():
 
     # gather input files
     logging.info("collecting input files")
-    files = sum(
-        [
+    files = []
+    if not (options.args().input_directories is None):
+        files += sum(
             [
-                f
-                for f in glob.glob(os.path.normpath(dir) + "/**", recursive=True)
-                if os.path.isfile(f)
-            ]
-            for dir in options.args().input_directories
-        ],
-        [],
-    )
+                [
+                    f
+                    for f in glob.glob(os.path.normpath(dir) + "/**", recursive=True)
+                    if os.path.isfile(f)
+                ]
+                for dir in options.args().input_directories
+            ],
+            [],
+        )
+    if not (options.args().file_lists is None):
+        for l in options.args().file_lists:
+            with open(l, "r") as list:
+                fs = list.read().splitlines()
+            for f in fs:
+                if not os.path.isfile(f):
+                    logging.warn(f"Can't find given input file {f}. Skip.")
+                else:
+                    files.append(f)
     if len(files) == 0:
         raise BenchmaxException("No input files found!")
     logging.info(f"number of collected input files: {len(files)}")

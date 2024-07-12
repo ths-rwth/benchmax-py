@@ -131,9 +131,15 @@ def parse_options(cmdlineoptions=None):
         "-D",
         "--directory",
         help="path(s) to a directory containing input files",
-        required=True,
         metavar="DIR",
         dest="input_directories",
+        nargs="+",
+    )
+    benchmark_group.add_argument(
+        "--fromlist",
+        help="file containing a list of files to benchmark (one file per line)",
+        type=str,
+        dest="file_lists",
         nargs="+",
     )
 
@@ -155,6 +161,10 @@ def parse_options(cmdlineoptions=None):
                 break
 
     res = ap.parse_args(cmdlineoptions)
+
+    if res.input_directories is None or len(res.input_directories) == 0:
+        if res.file_lists is None or len(res.file_lists) == 0:
+            raise argparse.ArgumentError("No valid inputs given!")
 
     res.start_time = int(dt.datetime.now().timestamp())
 
