@@ -73,9 +73,7 @@ def benchmax_main():
         raise BenchmaxException("No input files found!")
     logging.info(f"number of collected input files: {len(files)}")
 
-    options.args().common_file_prefix = (
-        os.path.commonpath([dir for dir in options.args().input_directories]) + "/"
-    )
+    options.args().common_file_prefix = os.path.commonpath(files) + "/"
 
     # create benchmarking pairs
     benchmarks = Benchmarks(tools, files)
