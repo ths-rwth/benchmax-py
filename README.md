@@ -32,7 +32,7 @@ A usual call to benchmax looks something like this:
 ```
 benchmax -T 1m -M 2G -b local -S smtrat-static -D QF_NRA -C output.csv
 ```
-This would use the local backend (more on backends later) to benchmark the `smtrat-static` tool on all instances contained in the `QF_NRA`folder with a timeout of 1 minute and memory limit of 2 GB per instance, and the results would be written to `output.csv`.
+This would use the local backend (more on backends later) to benchmark the `smtrat-static` tool on all instances contained in the `QF_NRA` folder with a timeout of 1 minute and memory limit of 2 GB per instance, and the results would be written to `output.csv`.
 
 More generally, calls should have this form:
 
@@ -66,7 +66,7 @@ To simplify benchmarking runs with (mostly) the same options, you can use config
 A config file contains the options just like you would write them in the terminal, but line breaks are also allowed.
 
 Benchmax will first collect the contents of all given config files, append them to the other given program options and then run as usual.
-You can combine multiple config files, but be careful to define the same option in multiple files.
+You can combine multiple config files, but be careful to not define the same option in multiple files.
 
 ### Local Backend
 
