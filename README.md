@@ -49,7 +49,8 @@ The following table explains the options in more detail:
 | Backend | `-b/--backend <backend>` | the backend to use. Currently, the backend can only be `local` or `slurm`. More information on backends below. | required |
 | Tools | `--tool/-S/-Z/... <path>` | the tool(s) to evaluate. For generic tools without custom parser, `--tool` can be used. For some tools, benchmax provides custom parsers, e.g. SMT-RAT (`-S`) or z3 (`-Z`). For a complete list, see Section "Tools" | one ore more |
 || `-s/--statistics` | collect additional statistics, if possible. For example, SMT-RAT and z3 can provide such statistics. | optional |
-| Input | `-D/--directory <path>` | path to a directory containing the test cases. All files the the given directories **and their subdirectories** will be considered. | one or more|
+| Input | `-D/--directory <path>` | path to a directory containing the test cases. All files the the given directories **and their subdirectories** will be considered. | one or more, required unless `--fromlist` is used|
+| Input | `--fromlist <path>` | path to a file listing the file names of the test cases (one in each line). | one or more, required unless `-D` is used|
 | Output | `-C/--output-csv <file.csv>` | name of a CSV file to which the output should be written. **Recommended format.** | required unless `-X` is set |
 |  | `-X/--output-xml <file.xml>` | name of an XML file to which the output should be written. | required unless `-C` is set |
 |  | `--split-output` | split output into one file for each tool. The output files will be prefixed with the name given for `-C/-X`| optional |
