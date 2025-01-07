@@ -131,7 +131,7 @@ def run_job(jobs: Benchmarks, array_size: int, slice_size: int) -> int:
 
     job_id = re.search("Submitted batch job ([0-9]+)", res.stdout)
     if job_id is None:
-        raise BenchmaxException("unable to obtain job id from slurm output!")
+        raise BenchmaxException("unable to obtain job id from slurm output: " + str(res.stdout))
     return int(job_id.group(1))
 
 
