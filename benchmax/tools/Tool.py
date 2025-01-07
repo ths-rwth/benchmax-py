@@ -18,6 +18,10 @@ class Tool:
         parts = command.split(" ")
 
         self.binary = parts[0]
+
+        if not os.path.isabs(self.binary):
+            self.binary = os.getcwd() + "/" + self.binary
+
         if len(parts) > 0:
             self.arguments = " ".join(parts[1:])
         else:
