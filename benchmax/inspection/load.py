@@ -14,7 +14,7 @@ def process_run(run, file, timeout, statistics):
         if res.get("name") == "answer":
             answer = res.text
         elif res.get("name") == "runtime":
-            runtime = int(res.text) / 1000.0
+            runtime = int(res.text)
         elif res.get("name") == "peak_memory":
             mem = int(res.text)
         if answer != None and runtime != None and mem != None:
