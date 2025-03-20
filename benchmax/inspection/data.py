@@ -7,11 +7,7 @@ def get_solvers(df):
 
 
 def get_fields(df, solver):
-    fields = []
-    for c in df.columns:
-        if solver == c[0]:
-            fields.append(c[1])
-    return fields
+    return [c[1] for c in df.columns if solver == c[0]]
 
 
 # is only used by virtual_best
