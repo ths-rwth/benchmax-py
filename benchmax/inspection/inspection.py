@@ -2,7 +2,7 @@ import pandas as pd
 from .data import *
 
 
-def inspect_answer(df, avg_runtimes=False):
+def inspect_answer(df, avg_runtimes=False, only_nonzero=True):
     """
     returns a DataFrame containing the counts of how often which solver gave which answer.
     if avg_runtimes is set, then for each answer also the average runtime of each solver is computed
@@ -23,7 +23,7 @@ def inspect_answer(df, avg_runtimes=False):
         "invalid",
         "success",
         "parsererror",
-        "nosuchfile"
+        "nosuchfile",
     ]
 
     data = []
@@ -84,7 +84,12 @@ def inspect_answer(df, avg_runtimes=False):
     else:
         columns = solvers
 
-    return pd.DataFrame(data, index=["count"] + answers + ["solved"], columns=columns)
+    df = pd.DataFrame(data, index=["count"] + answers + ["solved"], columns=columns)
+
+    if only_nonzero:
+        df = df[df.apply((lambda x: any([x[c] != 0 for c in df.columns])), axis=1)]
+
+    return df
 
 
 def inspect_wrongs(df, solver=None):
