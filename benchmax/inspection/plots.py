@@ -34,9 +34,9 @@ def setup_accessible_styles():
     colors_rwth = [
         "#00549F",
         "#E30066",
-        "#57AB27",
         "#006165",
         "#CC071E",
+        "#57AB27",
         "#F6A800",
         "#0098A1",
         "#A11035",
