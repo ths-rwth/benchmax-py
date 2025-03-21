@@ -22,7 +22,9 @@ def inspect_answer(df, avg_runtimes=False):
         "abort",
         "invalid",
         "success",
-    ]  # TODO: parsererror, nosuchfile
+        "parsererror",
+        "nosuchfile"
+    ]
 
     data = []
 
