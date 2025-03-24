@@ -131,7 +131,9 @@ def run_job(jobs: Benchmarks, array_size: int, slice_size: int) -> int:
 
     job_id = re.search("Submitted batch job ([0-9]+)", res.stdout)
     if job_id is None:
-        raise BenchmaxException("unable to obtain job id from slurm output: " + str(res.stdout))
+        raise BenchmaxException(
+            "unable to obtain job id from slurm output: " + str(res.stdout)
+        )
     return int(job_id.group(1))
 
 
@@ -140,7 +142,7 @@ def parse_out_file(jobs: Benchmarks, out_file: str, id_to_data):
         content_out = f.read()
 
     pattern = re.compile(
-        r"Executing (.+)\n# START ([0-9]+) #([^#]*)# END \2 #(?:([^#]*)# END DATA \2 #)?"
+        r"Executing (.+)\n# START ([0-9]+) #([\s\S]*)# END \2 #(?:([\s\S]*)# END DATA \2 #)?"
     )
 
     for m in pattern.finditer(content_out):
@@ -186,7 +188,7 @@ def parse_err_file(err_file: str, id_to_data):
         content_err = f.read()
 
     pattern_err = re.compile(
-        r"# START ([0-9]+) #([^#]*)# END \1 #(?:([^#]*)# END DATA \1 #)?"
+        r"# START ([0-9]+) #([\s\S]*)# END \1 #(?:([\s\S]*)# END DATA \1 #)?"
     )
 
     for m in pattern_err.finditer(content_err):
