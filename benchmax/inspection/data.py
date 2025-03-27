@@ -148,3 +148,29 @@ def unique_solved_instances(df, solvers):
         index=result_labels,
         columns=["num. unique instances", "rel. unique instances"],
     )
+
+def compare_attribute(df,solver1,solver2,col):
+    solved_both = filter(df, solved_by=[solver1,solver2]).loc[:,col].fillna(0)
+    solved_solver1 = filter(df, solved_by=[solver1], not_solved_by=[solver2]).loc[:,col].fillna(0)
+    solved_solver2 = filter(df, not_solved_by=[solver1], solved_by=[solver2]).loc[:,col].fillna(0)        
+    solved_none = filter(df, not_solved_by=[solver1,solver2]).loc[:,col].fillna(0)   
+
+    results = [
+        (solved_both.mean()   ,solved_both.median()   ,solved_both.min()   ,solved_both.max(),),
+        (solved_solver1.mean(),solved_solver1.median(),solved_solver1.min(),solved_solver1.max(),),
+        (solved_solver2.mean(),solved_solver2.median(),solved_solver2.min(),solved_solver2.max(),),
+        (solved_none.mean(),solved_none.median(),solved_none.min(),solved_none.max(),)
+    ]
+    return pd.DataFrame(results,columns=['mean','median','min','max'], index=['both','only '+solver1,'only '+solver2,'none'])
+
+def compare_attributes(df,solver1,solver2,cols):
+    solved_both = filter(df, solved_by=[solver1,solver2])
+    solved_solver1 = filter(df, solved_by=[solver1], not_solved_by=[solver2])
+    solved_solver2 = filter(df, not_solved_by=[solver1], solved_by=[solver2])
+    solved_none = filter(df, not_solved_by=[solver1,solver2])
+    results = [
+        (len(solved_both),),(len(solved_solver1),),(len(solved_solver2),),(len(solved_none),)
+    ]
+    numinst = pd.DataFrame(results,columns=['solved'], index=['both','only '+solver1,'only '+solver2,'none'])
+
+    return pd.concat([numinst] + [compare_attribute(df,solver1,solver2,col) for col in cols], axis=1,keys=['instances']+cols)
