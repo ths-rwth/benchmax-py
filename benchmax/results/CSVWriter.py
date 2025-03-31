@@ -23,8 +23,9 @@ def write_results_csv(
     columns_dict = {t: set() for t in tools}
 
     for t, f in benchmarks.pairs:
-        for s in results.get(t, f).additional_info:
-            columns_dict[t].add(s)
+        if t in tools:
+            for s in results.get(t, f).additional_info:
+                columns_dict[t].add(s)
 
     first_row = [""]
     second_row = [""]
