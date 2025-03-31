@@ -74,6 +74,13 @@ def add_backend_options(parser: argparse.ArgumentParser):
         default="~/load_environment",
     )
 
+    backend_group.add_argument(
+        "--slurm.only-collect",
+        help="only collect the results of a previous run with the same settings",
+        dest="only_collect",
+        action="store_true",
+    )
+
     # SSH Backend Settings
     # TODO
 

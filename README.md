@@ -83,6 +83,7 @@ This requires additional options:
 - `--slurm.array-size <size>` (required): maximum size of the job array. If there are fewer tool-file pairs, the array is shrinked to fit.
 - `--slurm.sbatch-options=<option-string>` (required): additional options to pass to slurm, in quotes. **Important:** the `=` is needed to prevent that `argparse` interprets these as `benchmax`-options.
 - `--slurm.env <file>` (optional): file for loading an environment (needed on the RWTH-Cluster). As a default `load_environment` is assumed.
+- `--slurm.only-collect` (optional): if set, benchmax will not execute any tools, but instead try to collect the results from the log files of a previous run that used the same tools and files. This is particularly useful if something goes wrong during parsing or while writing the output file: fix the mistake and simply invoke benchmax again with this option in addition to the previously used settings.
 
 ### Tools
 

@@ -284,24 +284,27 @@ def slurm(benchmarks: Benchmarks):
     tmp_dir = str(os.path.normpath(options.args().slurm_tmp_dir))
     Path(tmp_dir).mkdir(parents=True, exist_ok=True)
 
-    logging.info(f"clear directory for temporary results ({tmp_dir})")
-    for f in glob.glob(tmp_dir + "/*"):
-        os.remove(f)
+    if not options.args().only_collect:
+        logging.info(f"clear directory for temporary results ({tmp_dir})")
+        for f in glob.glob(tmp_dir + "/*"):
+            os.remove(f)
 
-    try:
-        # submit job
-        array_size = min(len(benchmarks), options.args().slurm_array_size)
-        slice_size = math.ceil(len(benchmarks) / array_size)
-        array_size = math.ceil(len(benchmarks) / slice_size)
-        job_id = run_job(benchmarks, array_size, slice_size)
-        logging.info(f"job {job_id} scheduled.")
+        try:
+            # submit job
+            array_size = min(len(benchmarks), options.args().slurm_array_size)
+            slice_size = math.ceil(len(benchmarks) / array_size)
+            array_size = math.ceil(len(benchmarks) / slice_size)
+            job_id = run_job(benchmarks, array_size, slice_size)
+            logging.info(f"job {job_id} scheduled.")
 
-        # continuously check status
-        monitor_progress(array_size, job_id)
-    except:
-        logging.error("some exception occurred, will cancel slurm jobs")
-        cancel_job(job_id)
-        raise
+            # continuously check status
+            monitor_progress(array_size, job_id)
+        except:
+            logging.error("some exception occurred, will cancel slurm jobs")
+            cancel_job(job_id)
+            raise
+    else:
+        logging.info("only collecting results.")
 
     # collect jobs
     logging.info("collecting results")
