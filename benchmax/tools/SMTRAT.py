@@ -80,7 +80,7 @@ class SMTRAT(Tool):
                 result.answer = get_status_from_output(result)
         if options.args().statistics and not parse_stats(result):
             if result.answer in ["sat", "unsat", "unknown", "wrong", "success"]:
-                logging.warn(f"Parsing statistics failed for {result.stdout}")
+                logging.warning(f"Parsing statistics failed for {result.stdout}")
 
 
 class SMTRAT_QE(SMTRAT):

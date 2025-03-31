@@ -66,7 +66,7 @@ def benchmax_main():
                 fs = list.read().splitlines()
             for f in fs:
                 if not os.path.isfile(f):
-                    logging.warn(f"Can't find given input file {f}. Skip.")
+                    logging.warning(f"Can't find given input file {f}. Skip.")
                 else:
                     files.append(f)
     if len(files) == 0:

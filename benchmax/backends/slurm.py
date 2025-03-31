@@ -159,7 +159,7 @@ def parse_out_file(jobs: Benchmarks, out_file: str, id_to_data):
                 tool_found = True
                 break
         if not tool_found:
-            logging.warn(f"could not find tool for {cmd} from {out_file}")
+            logging.warning(f"could not find tool for {cmd} from {out_file}")
 
         # output
         res.stdout = m.group(3)
@@ -167,14 +167,14 @@ def parse_out_file(jobs: Benchmarks, out_file: str, id_to_data):
         # exitcode
         match_e = re.search("exitcode: (.*)", m.group(4))
         if match_e is None:
-            logging.warn(f"did not find exitcode in {m.group(4)}")
+            logging.warning(f"did not find exitcode in {m.group(4)}")
         else:
             res.exit_code = int(match_e.group(1))
 
         # runtime
         match_t = re.search("time: (.*)", m.group(4))
         if match_t is None:
-            logging.warn(f"did not find time in {m.group(4)}")
+            logging.warning(f"did not find time in {m.group(4)}")
         else:
             res.runtime = timedelta(milliseconds=int(match_t.group(1)))
 
@@ -194,7 +194,7 @@ def parse_err_file(err_file: str, id_to_data):
     for m in pattern_err.finditer(content_err):
         data = id_to_data.get(int(m.group(1)) - 1, None)
         if data is None:
-            logging.warn(f"no corresponding result for err file {err_file}")
+            logging.warning(f"no corresponding result for err file {err_file}")
             return
         _, _, res = data
         res.stderr = m.group(2)
@@ -312,7 +312,7 @@ def slurm(benchmarks: Benchmarks):
     err_files = glob.glob(tmp_dir + "/JOB.*.err")
     logging.info(f"collected {len(out_files)} out, {len(err_files)} err files")
     if len(out_files) != len(err_files):
-        logging.warn("number of out and err files differ!")
+        logging.warning("number of out and err files differ!")
 
     id_to_data = {}
 
@@ -345,8 +345,8 @@ def slurm(benchmarks: Benchmarks):
         if output.returncode == 0:
             logging.info(f"archived log files in {archive} from {dirname}")
         else:
-            logging.warn("archiving log files failed!")
-            logging.warn(output.stdout)
+            logging.warning("archiving log files failed!")
+            logging.warning(output.stdout)
 
     if not options.args().slurm_keep_logs:
         logging.info("deleting log files directory for temporary results")

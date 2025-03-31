@@ -89,7 +89,7 @@ def check_for_missing_results(benchmarks: Benchmarks, results: Results):
     for tool, file in benchmarks.pairs:
         res = results.get(tool, file)
         if not res and tool.can_handle(file):
-            logging.warn(f"Missing result for {tool} on {file}")
+            logging.warning(f"Missing result for {tool} on {file}")
 
 
 def sanitize_result(tool: Tool, file: str, result: Result):
@@ -104,8 +104,8 @@ def sanitize_result(tool: Tool, file: str, result: Result):
         result.stdout = ""
         if timediff > 2 * options.args().gracetime:
             # 2* because slurm already adds gracetime to the timeout...
-            logging.warn(f"Running {tool} on {file} exceeded grace time")
-            logging.warn(
+            logging.warning(f"Running {tool} on {file} exceeded grace time")
+            logging.warning(
                 "runtime: "
                 + str(result.runtime.total_seconds())
                 + ", "
@@ -142,5 +142,5 @@ def parse_peak_memory(output: str) -> int:
     if m:
         return int(m.group(1))
     else:
-        logging.warn("Could not extract memory usage from output: " + output)
+        logging.warning("Could not extract memory usage from output: " + output)
         return -1  # TODO: avoid magic number

@@ -48,10 +48,10 @@ class Tool:
     def is_executable(self) -> bool:
         # check whether path is existing file
         if not os.path.isfile(self.binary):
-            logging.warn(f"The tool {self.binary} does not seem to be a file.")
+            logging.warning(f"The tool {self.binary} does not seem to be a file.")
             return False
         # check whether file is executable
         if not os.access(self.binary, os.X_OK):
-            logging.warn(f"The tool {self.binary} is not executable.")
+            logging.warning(f"The tool {self.binary} is not executable.")
             return False
         return True
