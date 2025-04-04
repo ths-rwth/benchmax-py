@@ -58,85 +58,127 @@ def performance_profile(df, solvers, column="runtime"):
     ax.set_xlabel("number of solved instances")
     return ax
 
-def scatter(df, s1, s2, field, ax = plt.gca(), category=None, colormap={}):
-    if (s1,field+".active_at_timeout") in df.columns and (s2,field+".active_at_timeout") in df.columns:
+
+def scatter(df, s1, s2, field, ax=None, category=None, colormap={}):
+    if ax is None:
+        ax = plt.gca()
+    if (s1, field + ".active_at_timeout") in df.columns and (
+        s2,
+        field + ".active_at_timeout",
+    ) in df.columns:
         return scatter_timer(df, s1, s2, field, ax, category, colormap)
     else:
         return scatter_field(df, s1, s2, field, ax, category, colormap)
 
-# TODO axis labels bot and top, scatter min and max values
-def scatter_field(df, s1, s2, field, ax = plt.gca(), category=None, colormap={}):
-    df1 = df[[(s1,field), (s2,field)]].copy()
 
-    maxval = max(df[(s1,field)].max(), df[(s2,field)].max()) * 1.05
-    df1.loc[ (df[(s1,'answer')].isin(['timeout', 'memout'])), (s1,field) ] = maxval
-    df1.loc[ (df[(s2,'answer')].isin(['timeout', 'memout'])), (s2,field) ] = maxval
+# TODO axis labels bot and top, scatter min and max values
+def scatter_field(df, s1, s2, field, ax=None, category=None, colormap={}):
+    if ax is None:
+        ax = plt.gca()
+    df1 = df[[(s1, field), (s2, field)]].copy()
+
+    maxval = max(df[(s1, field)].max(), df[(s2, field)].max()) * 1.05
+    df1.loc[(df[(s1, "answer")].isin(["timeout", "memout"])), (s1, field)] = maxval
+    df1.loc[(df[(s2, "answer")].isin(["timeout", "memout"])), (s2, field)] = maxval
     ax.plot([0, maxval], [maxval, maxval], ls="-", c=".3")
     ax.plot([maxval, maxval], [0, maxval], ls="-", c=".3")
 
-    #ax.set_xticks(list(ax.get_xticks()) + [maxval], map(str,list(ax.get_xticks()))+ ['$\\bot$'])
-    #ax.set_yticks(list(ax.get_yticks()) + [maxval], map(str,list(ax.get_yticks()))+ ['$\\bot$'])
+    # ax.set_xticks(list(ax.get_xticks()) + [maxval], map(str,list(ax.get_xticks()))+ ['$\\bot$'])
+    # ax.set_yticks(list(ax.get_yticks()) + [maxval], map(str,list(ax.get_yticks()))+ ['$\\bot$'])
 
     if category:
         for cat in df[category].unique():
-            df1[df1[category] == cat].plot.scatter(ax=ax,x=(s1, field),y=(s2, field),label=cat,c=colormap[cat],alpha=0.5)
+            df1[df1[category] == cat].plot.scatter(
+                ax=ax,
+                x=(s1, field),
+                y=(s2, field),
+                label=cat,
+                c=colormap[cat],
+                alpha=0.5,
+            )
     else:
-        df1.plot.scatter(ax=ax, x=(s1,field), y=(s2,field), alpha=0.5)
+        df1.plot.scatter(ax=ax, x=(s1, field), y=(s2, field), alpha=0.5)
 
     ax.title.set_text(field)
     ax.set_xlabel(s1)
     ax.set_ylabel(s2)
     return ax
 
-def scatter_timer(df, s1, s2, field, ax = plt.gca(), category=None, colormap={}):
-    df1 = df[[(s1,field + ".overall_s"), (s2,field+ ".overall_s")]].copy()
 
-    maxval = max(df[(s1,field+ ".overall_s")].max(), df[(s2,field+ ".overall_s")].max()) * 1.05
-    df1.loc[ (df[(s1,'answer')].isin(['timeout', 'memout'])), (s1,field+ ".overall_s") ] = maxval
-    df1.loc[ (df[(s2,'answer')].isin(['timeout', 'memout'])), (s2,field+ ".overall_s") ] = maxval
+def scatter_timer(df, s1, s2, field, ax=None, category=None, colormap={}):
+    if ax is None:
+        ax = plt.gca()
+    df1 = df[[(s1, field + ".overall_s"), (s2, field + ".overall_s")]].copy()
+
+    maxval = (
+        max(df[(s1, field + ".overall_s")].max(), df[(s2, field + ".overall_s")].max())
+        * 1.05
+    )
+    df1.loc[
+        (df[(s1, "answer")].isin(["timeout", "memout"])), (s1, field + ".overall_s")
+    ] = maxval
+    df1.loc[
+        (df[(s2, "answer")].isin(["timeout", "memout"])), (s2, field + ".overall_s")
+    ] = maxval
     ax.plot([0, maxval], [maxval, maxval], ls="-", c=".3")
     ax.plot([maxval, maxval], [0, maxval], ls="-", c=".3")
 
-    df1.loc[ (df[(s1,field+".active_at_timeout")]==1), (s1,field+ ".overall_s") ] = maxval * 1.05
-    df1.loc[ (df[(s2,field+".active_at_timeout")]==1), (s2,field+ ".overall_s") ] = maxval * 1.05
+    df1.loc[
+        (df[(s1, field + ".active_at_timeout")] == 1), (s1, field + ".overall_s")
+    ] = (maxval * 1.05)
+    df1.loc[
+        (df[(s2, field + ".active_at_timeout")] == 1), (s2, field + ".overall_s")
+    ] = (maxval * 1.05)
     ax.plot([0, maxval * 1.05], [maxval * 1.05, maxval * 1.05], ls="-", c=".3")
     ax.plot([maxval * 1.05, maxval * 1.05], [0, maxval * 1.05], ls="-", c=".3")
 
-    #ax.set_xticks(list(ax.get_xticks()) + [maxval], map(str,list(ax.get_xticks())) ['$\\bot$'])
-    #ax.set_yticks(list(ax.get_yticks()) + [maxval], map(str,list(ax.get_yticks()))+ ['$\\bot$'])
-    #ax.set_xticks(list(ax.get_xticks()) + [maxval* 1.05], map(str,list(ax.get_xticks()))+ ['$\\top$'])
-    #ax.set_yticks(list(ax.get_yticks()) + [maxval* 1.05], map(str,list(ax.get_yticks()))+ ['$\\top$'])
+    # ax.set_xticks(list(ax.get_xticks()) + [maxval], map(str,list(ax.get_xticks())) ['$\\bot$'])
+    # ax.set_yticks(list(ax.get_yticks()) + [maxval], map(str,list(ax.get_yticks()))+ ['$\\bot$'])
+    # ax.set_xticks(list(ax.get_xticks()) + [maxval* 1.05], map(str,list(ax.get_xticks()))+ ['$\\top$'])
+    # ax.set_yticks(list(ax.get_yticks()) + [maxval* 1.05], map(str,list(ax.get_yticks()))+ ['$\\top$'])
 
     if category:
         for cat in df[category].unique():
-            df1[df1[category] == cat].plot.scatter(ax=ax,x=(s1, field+ ".overall_s"),y=(s2, field+ ".overall_s"),label=cat,c=colormap[cat],alpha=0.5)
+            df1[df1[category] == cat].plot.scatter(
+                ax=ax,
+                x=(s1, field + ".overall_s"),
+                y=(s2, field + ".overall_s"),
+                label=cat,
+                c=colormap[cat],
+                alpha=0.5,
+            )
     else:
-        df1.plot.scatter(ax=ax, x=(s1,field+ ".overall_s"), y=(s2,field+ ".overall_s"), alpha=0.5)
+        df1.plot.scatter(
+            ax=ax, x=(s1, field + ".overall_s"), y=(s2, field + ".overall_s"), alpha=0.5
+        )
 
     ax.title.set_text(field)
     ax.set_xlabel(s1)
     ax.set_ylabel(s2)
     return ax
 
+
 import math
 
+
 def scatter_multi(df, s1, s2, fields):
-    nrows = math.ceil(len(fields)/4)
-    fig, axs = plt.subplots(nrows=nrows, ncols=4, figsize=(20,4*nrows))
-    fig.text(0.5, 0.04, s1, ha='center')
-    fig.text(0.04, 0.5, s2, va='center', rotation='vertical')
+    nrows = math.ceil(len(fields) / 4)
+    fig, axs = plt.subplots(nrows=nrows, ncols=4, figsize=(20, 4 * nrows))
+    fig.text(0.5, 0.04, s1, ha="center")
+    fig.text(0.04, 0.5, s2, va="center", rotation="vertical")
 
     ax = axs.reshape(-1)
 
     idx = 0
     for field in fields:
-        scatter(df,s1,s2,field,ax[idx])
+        scatter(df, s1, s2, field, ax[idx])
         ax[idx].set_xlabel(None)
         ax[idx].set_ylabel(None)
         scatter_equal_line(ax[idx])
-        idx=idx+1
+        idx = idx + 1
 
     return axs
+
 
 def scatter_plot(df, solver1, solver2, field, filter=False, category=None, colormap={}):
     if filter:
