@@ -137,19 +137,26 @@ def run_job(jobs: Benchmarks, array_size: int, slice_size: int) -> int:
     return int(job_id.group(1))
 
 
-def parse_out_file(jobs: Benchmarks, out_file: str, id_to_data):
+def parse_chunk(jobs: Benchmarks, out_file: str, results: Results):
     with open(out_file, "r") as f:
         content_out = f.read()
+    with open(out_file.replace(".out", ".err"), "r") as f:
+        content_err = f.read()
 
-    pattern = re.compile(
+    pattern_out = re.compile(
         r"Executing (.+)\n# START ([0-9]+) #([\s\S]*)# END \2 #(?:([\s\S]*)# END DATA \2 #)?"
     )
+    pattern_err = re.compile(
+        r"# START ([0-9]+) #([\s\S]*)# END \1 #(?:([\s\S]*)# END DATA \1 #)?"
+    )
 
-    for m in pattern.finditer(content_out):
+    for m_out, m_err in zip(
+        pattern_out.finditer(content_out), pattern_err.finditer(content_err)
+    ):
         res = Result()
 
         # gather tool and file from command
-        cmd = m.group(1)
+        cmd = m_out.group(1)
         tool_found = False
         for tool in jobs.tools:
             p = tool.parse_command_line(cmd)
@@ -162,43 +169,30 @@ def parse_out_file(jobs: Benchmarks, out_file: str, id_to_data):
             logging.warning(f"could not find tool for {cmd} from {out_file}")
 
         # output
-        res.stdout = m.group(3)
+        res.stdout = m_out.group(3)
 
         # exitcode
-        match_e = re.search("exitcode: (.*)", m.group(4))
+        match_e = re.search("exitcode: (.*)", m_out.group(4))
         if match_e is None:
-            logging.warning(f"did not find exitcode in {m.group(4)}")
+            logging.warning(f"did not find exitcode in {m_out.group(4)}")
         else:
             res.exit_code = int(match_e.group(1))
 
         # runtime
-        match_t = re.search("time: (.*)", m.group(4))
+        match_t = re.search("time: (.*)", m_out.group(4))
         if match_t is None:
-            logging.warning(f"did not find time in {m.group(4)}")
+            logging.warning(f"did not find time in {m_out.group(4)}")
         else:
             res.runtime = timedelta(milliseconds=int(match_t.group(1)))
 
-        # update data
-        job_id = int(m.group(2)) - 1
-        id_to_data[job_id] = used_tool, used_input, res
-
-
-def parse_err_file(err_file: str, id_to_data):
-    with open(err_file, "r") as f:
-        content_err = f.read()
-
-    pattern_err = re.compile(
-        r"# START ([0-9]+) #([\s\S]*)# END \1 #(?:([\s\S]*)# END DATA \1 #)?"
-    )
-
-    for m in pattern_err.finditer(content_err):
-        data = id_to_data.get(int(m.group(1)) - 1, None)
-        if data is None:
-            logging.warning(f"no corresponding result for err file {err_file}")
-            return
-        _, _, res = data
-        res.stderr = m.group(2)
+        res.stderr = m_err.group(2)
         res.peak_memory_kbytes = parse_peak_memory(res.stderr)
+
+        tool.parse_additional(res)
+        sanitize_result(used_tool, used_input, res)
+        res.stdout = ""
+        res.stderr = ""
+        results.add_result(used_tool, used_input, res)
 
 
 def job_finished(job_id: int) -> bool:
@@ -309,26 +303,16 @@ def slurm(benchmarks: Benchmarks):
     # collect jobs
     logging.info("collecting results")
     out_files = glob.glob(tmp_dir + "/JOB.*.out")
-    err_files = glob.glob(tmp_dir + "/JOB.*.err")
-    logging.info(f"collected {len(out_files)} out, {len(err_files)} err files")
-    if len(out_files) != len(err_files):
-        logging.warning("number of out and err files differ!")
-
-    id_to_data = {}
-
-    logging.info("parsing results")
     for f in out_files:
-        parse_out_file(benchmarks, f, id_to_data)
-    for f in err_files:
-        parse_err_file(f, id_to_data)
+        if not os.path.exists(f.replace(".out", ".err")):
+            raise BenchmaxException(f"missing corresponding err file for {f}")
+
+    logging.info(f"collected {len(out_files)} out files")
 
     results = Results()
-    for tool, file, result in tqdm(
-        id_to_data.values(), desc="gathering data", ncols=100, dynamic_ncols=True
-    ):
-        tool.parse_additional(result)
-        sanitize_result(tool, file, result)
-        results.add_result(tool, file, result)
+
+    for f in tqdm(out_files, desc="parsing results", ncols=100, dynamic_ncols=True):
+        parse_chunk(benchmarks, f, results)
 
     # finalize
     check_for_missing_results(benchmarks, results)
@@ -350,6 +334,8 @@ def slurm(benchmarks: Benchmarks):
 
     if not options.args().slurm_keep_logs:
         logging.info("deleting log files directory for temporary results")
-        for f in out_files + err_files:
+        for f in out_files:
             if os.path.exists(f):
                 os.remove(f)
+            if os.path.exists(f.replace(".out", ".err")):
+                os.remove(f.replace(".out", ".err"))
