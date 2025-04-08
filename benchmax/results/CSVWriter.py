@@ -24,7 +24,10 @@ def write_results_csv(
 
     for t, f in benchmarks.pairs:
         if t in tools:
-            for s in results.get(t, f).additional_info:
+            r = results.get(t, f)
+            if r is None:
+                continue
+            for s in r.additional_info:
                 columns_dict[t].add(s)
 
     first_row = [""]
