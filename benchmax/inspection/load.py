@@ -96,12 +96,15 @@ def xmls_to_pandas(params, statistics_filter=None):
 
 
 def transform_to_seconds(df):
+    from warnings import simplefilter
+    simplefilter(action="ignore", category=pd.errors.PerformanceWarning)
     for solver in df.columns.get_level_values(0).unique():
         df[(solver,'runtime')] /= 1000
         for field in [c[1] for c in df.columns if solver == c[0]]:
             if '.overall_ms' in field:
                 field2 = field.replace('.overall_ms','.overall_s')
                 df[(solver,field2)] = df[(solver,field)] / 1000
+    df = df.copy()
 
 
 def filter_solvers(df, only=None, exclude=None):
