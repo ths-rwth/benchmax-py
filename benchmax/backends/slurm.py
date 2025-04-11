@@ -138,6 +138,7 @@ def run_job(jobs: Benchmarks, array_size: int, slice_size: int) -> int:
 
 
 def parse_chunk(jobs: Benchmarks, out_file: str, results: Results):
+    logging.info(f"Processing {out_file}")
     with open(out_file, "r") as f:
         content_out = f.read()
     with open(out_file.replace(".out", ".err"), "r") as f:
