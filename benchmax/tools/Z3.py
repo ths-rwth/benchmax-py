@@ -1,9 +1,34 @@
+import logging
 import re
 
 from .. import options
 from ..results.Result import Result
 from .Tool import Tool
 
+def parse_stats(result: Result) -> bool:
+    raw_output = result.stdout
+    i = raw_output.find("(:")
+    if i < 0:
+        return True
+
+    r_category = re.compile(
+        r"\(\s*(?P<values>(?::\S+\s+\S*\s*)+)(?P<tail>\)\s*)"
+    )
+
+    r_values = re.compile(r":(?P<key>\S+)\s+(?P<val>[^\s):]+)")
+
+    m = re.match(r_category, raw_output[i:])
+    if m is None:
+        return False
+
+    while m != None:
+        values = re.finditer(r_values, m.group("values"))
+        for v in values:
+            result.additional_info[v.group("key")] = v.group("val")
+        i += m.end()
+        m = re.match(r_category, raw_output[i:])
+
+    return True
 
 class Z3(Tool):
     def __init__(self, command: str):
@@ -30,7 +55,9 @@ class Z3(Tool):
         else:
             result.answer = "invalid"
 
-        # TODO: parse stats?
+        if options.args().statistics and not parse_stats(result):
+            if result.answer in ["sat", "unsat", "unknown", "wrong", "success"]:
+                logging.warning(f"Parsing statistics failed for {result.stdout}")
 
 
 class Z3_QE(Z3):

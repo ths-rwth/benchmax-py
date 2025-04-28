@@ -4,6 +4,7 @@ from .SMTRAT import SMTRAT, SMTRAT_QE
 from .Z3 import Z3, Z3_QE
 from .Redlog import Redlog
 from .CDD import CDD
+from .cvc5 import cvc5
 
 
 def add_tool_options(parser: argparse.ArgumentParser):
@@ -74,3 +75,13 @@ def add_tool_options(parser: argparse.ArgumentParser):
         type=CDD,
         action="append",
     )
+
+    tool_group.add_argument(
+        "--cvc5",
+        help="cvc5 with SMT-Lib interface",
+        dest="tools",
+        metavar="PATH",
+        type=cvc5,
+        action="append",
+    )
+

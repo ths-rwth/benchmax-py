@@ -35,9 +35,7 @@ def parse_stats(result: Result) -> bool:
     while m != None:
         values = re.finditer(r_values, m.group("values"))
         for v in values:
-            result.additional_info[m.group("prefix") + "_" + v.group("key")] = v.group(
-                "val"
-            )
+            result.additional_info[m.group("prefix") + "_" + v.group("key")] = v.group("val")
         i += m.end()
         m = re.match(r_category, raw_output[i:])
     logging.debug("processed all submatches")
