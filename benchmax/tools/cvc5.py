@@ -31,6 +31,6 @@ class cvc5(Tool):
             result.answer = "invalid"
 
         if options.args().statistics:
-            for line in (line for line in result.answer.splitlines() if '=' in line):
+            for line in (line for line in result.stderr.splitlines() if '=' in line):
                 key_value_pair = line.split('=', maxsplit=1)
                 result.additional_info[key_value_pair[0].strip()] = key_value_pair[1].strip()
